@@ -1,0 +1,11 @@
+	SubjectID1	SubjectID2	Group1	Group2	Distance
+0	sampleID_2	sampleID_1	2	2	0.1245210245251656
+1	sampleID_1	sampleID_1a	2	a	0.8027457594871521
+2	sampleID_1	sampleID_2a	2	a	0.7912278175354004
+3	sampleID_2	sampleID_1a	2	a	0.7777281403541565
+4	sampleID_2	sampleID_2a	2	a	0.7662101984024048
+0	sampleID_2a	sampleID_1a	a	a	0.01946884579956532
+1	sampleID_1a	sampleID_1	a	2	0.8027457594871521
+2	sampleID_1a	sampleID_2	a	2	0.7777281403541565
+3	sampleID_2a	sampleID_1	a	2	0.7912278175354004
+4	sampleID_2a	sampleID_2	a	2	0.7662101984024048

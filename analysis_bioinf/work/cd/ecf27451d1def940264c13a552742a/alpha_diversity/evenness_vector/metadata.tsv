@@ -1,0 +1,6 @@
+id	treatment1	mix8	badpairwise10	pielou_evenness
+#q2:types	categorical	categorical	categorical	numeric
+sampleID_1	b	2		0.787847999583158
+sampleID_2	b	2	2	0.749671962952436
+sampleID_1a	a	a	2	0.891439163067144
+sampleID_2a	a	a	a	0.884632379491188

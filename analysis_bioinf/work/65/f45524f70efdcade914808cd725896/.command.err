@@ -1,0 +1,21 @@
+Unable to find image 'quay.io/biocontainers/mulled-v2-53dae514294fca7b44842b784ed85a5303ac2d80:7b3365d778c690ca79bc85aaaeb86bb39a2dec69-0' locally
+7b3365d778c690ca79bc85aaaeb86bb39a2dec69-0: Pulling from biocontainers/mulled-v2-53dae514294fca7b44842b784ed85a5303ac2d80
+c1a16a04cedd: Already exists
+4ca545ee6d5d: Already exists
+f2b442b1a486: Pulling fs layer
+f2b442b1a486: Verifying Checksum
+f2b442b1a486: Download complete
+f2b442b1a486: Pull complete
+Digest: sha256:2da37f8757154ca7337574179e23fd8d426f145b49805daa8737a9c287fe1049
+Status: Downloaded newer image for quay.io/biocontainers/mulled-v2-53dae514294fca7b44842b784ed85a5303ac2d80:7b3365d778c690ca79bc85aaaeb86bb39a2dec69-0
+vsearch v2.21.1_linux_x86_64, 30.9GB RAM, 8 cores
+https://github.com/torognes/vsearch
+
+Reading file ASV_seqs.fasta 100%
+88043 nt in 347 seqs, min 252, max 303, avg 254
+Counting k-mers 100%
+Clustering 100%
+Sorting clusters 100%
+Writing clusters 100%
+Clusters: 312 Size min 1, max 4, avg 1.1
+Singletons: 284, 81.8% of seqs, 91.0% of clusters

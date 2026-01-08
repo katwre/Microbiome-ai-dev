@@ -1,0 +1,3 @@
+"NFCORE_AMPLISEQ:AMPLISEQ:PHYLOSEQ_INTAX_QIIME2":
+    python: 3.9.1
+    pandas: 1.1.5

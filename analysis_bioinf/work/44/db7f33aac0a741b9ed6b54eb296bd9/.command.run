@@ -1,0 +1,545 @@
+#!/bin/bash
+### ---
+### name: 'NFCORE_AMPLISEQ:AMPLISEQ:SUMMARY_REPORT (1)'
+### container: 'quay.io/biocontainers/mulled-v2-b2ec1fea5791d428eebb8c8ea7409c350d31dada:a447f6b7a6afde38352b24c30ae9cd6e39df95c4-1'
+### outputs:
+### - '*.svg'
+### - 'summary_report.html'
+### - 'versions.yml'
+### ...
+set -e
+set -u
+NXF_DEBUG=${NXF_DEBUG:=0}; [[ $NXF_DEBUG > 1 ]] && set -x
+NXF_ENTRY=${1:-nxf_main}
+
+nxf_tree() {
+    local pid=$1
+
+    declare -a ALL_CHILDREN
+    while read P PP;do
+        ALL_CHILDREN[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    pstat() {
+        local x_pid=$1
+        local STATUS=$(2> /dev/null < /proc/$1/status grep -E 'Vm|ctxt')
+
+        if [ $? = 0 ]; then
+        local  x_vsz=$(echo "$STATUS" | grep VmSize | awk '{print $2}' || echo -n '0')
+        local  x_rss=$(echo "$STATUS" | grep VmRSS | awk '{print $2}' || echo -n '0')
+        local x_peak=$(echo "$STATUS" | grep -E 'VmPeak|VmHWM' | sed 's/^.*:\s*//' | sed 's/[\sa-zA-Z]*$//' | tr '\n' ' ' || echo -n '0 0')
+        local x_pmem=$(awk -v rss=$x_rss -v mem_tot=$mem_tot 'BEGIN {printf "%.0f", rss/mem_tot*100*10}' || echo -n '0')
+        local vol_ctxt=$(echo "$STATUS" | grep '\bvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        local inv_ctxt=$(echo "$STATUS" | grep '\bnonvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        cpu_stat[x_pid]="$x_pid $x_pmem $x_vsz $x_rss $x_peak $vol_ctxt $inv_ctxt"
+        fi
+    }
+
+    pwalk() {
+        pstat $1
+        for i in ${ALL_CHILDREN[$1]:=}; do pwalk $i; done
+    }
+
+    pwalk $1
+}
+
+nxf_stat() {
+    cpu_stat=()
+    nxf_tree $1
+
+    declare -a sum=(0 0 0 0 0 0 0 0)
+    local pid
+    local i
+    for pid in "${!cpu_stat[@]}"; do
+        local row=(${cpu_stat[pid]})
+        [ $NXF_DEBUG = 1 ] && echo "++ stat mem=${row[*]}"
+        for i in "${!row[@]}"; do
+        if [ $i != 0 ]; then
+            sum[i]=$((sum[i]+row[i]))
+        fi
+        done
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat SUM=${sum[*]}"
+
+    for i in {1..7}; do
+        if [ ${sum[i]} -lt ${cpu_peak[i]} ]; then
+            sum[i]=${cpu_peak[i]}
+        else
+            cpu_peak[i]=${sum[i]}
+        fi
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat PEAK=${sum[*]}\n"
+    nxf_stat_ret=(${sum[*]})
+}
+
+nxf_mem_watch() {
+    set -o pipefail
+    local pid=$1
+    local trace_file=.command.trace
+    local count=0;
+    declare -a cpu_stat=(0 0 0 0 0 0 0 0)
+    declare -a cpu_peak=(0 0 0 0 0 0 0 0)
+    local mem_tot=$(< /proc/meminfo grep MemTotal | awk '{print $2}')
+    local timeout
+    local DONE
+    local STOP=''
+
+    [ $NXF_DEBUG = 1 ] && nxf_sleep 0.2 && ps fx
+
+    while true; do
+        nxf_stat $pid
+        if [ $count -lt 10 ]; then timeout=1;
+        elif [ $count -lt 120 ]; then timeout=5;
+        else timeout=30;
+        fi
+        read -t $timeout -r DONE || true
+        [[ $DONE ]] && break
+        if [ ! -e /proc/$pid ]; then
+            [ ! $STOP ] && STOP=$(nxf_date)
+            [ $(($(nxf_date)-STOP)) -gt 10000 ] && break
+        fi
+        count=$((count+1))
+    done
+
+    printf "%s\n" \
+        "%mem=${nxf_stat_ret[1]}" \
+        "vmem=${nxf_stat_ret[2]}" \
+        "rss=${nxf_stat_ret[3]}" \
+        "peak_vmem=${nxf_stat_ret[4]}" \
+        "peak_rss=${nxf_stat_ret[5]}" \
+        "vol_ctxt=${nxf_stat_ret[6]}" \
+        "inv_ctxt=${nxf_stat_ret[7]}" >> "$trace_file" || >&2 echo "Error: Failed to append to file: $trace_file"
+}
+
+nxf_write_trace() {
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+}
+
+nxf_trace_mac() {
+    local start_millis=$(nxf_date)
+
+    /usr/bin/env Rscript /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/44/db7f33aac0a741b9ed6b54eb296bd9/.command.sh
+
+    local end_millis=$(nxf_date)
+    local wall_time=$((end_millis-start_millis))
+    local ucpu=''
+    local cpu_model=''
+    local io_stat1=('' '' '' '' '' '')
+    nxf_write_trace
+}
+
+nxf_fd() {
+    local FD=11
+    while [ -e /proc/$$/fd/$FD ]; do FD=$((FD+1)); done
+    echo $FD
+}
+
+nxf_trace_linux() {
+    local pid=$$
+    command -v ps &>/dev/null || { >&2 echo "Command 'ps' required by nextflow to collect task metrics cannot be found"; exit 1; }
+    local num_cpus=$(< /proc/cpuinfo grep '^processor' -c)
+    local cpu_model=$(< /proc/cpuinfo grep '^model name' | head -n 1 | awk 'BEGIN{FS="\t: "} { print $2 }')
+    local tot_time0=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time0=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local io_stat0=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local start_millis=$(nxf_date)
+    trap 'kill $mem_proc' ERR
+    
+    /usr/bin/env Rscript /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/44/db7f33aac0a741b9ed6b54eb296bd9/.command.sh &
+    local task=$!
+
+    mem_fd=$(nxf_fd)
+    eval "exec $mem_fd> >(nxf_mem_watch $task)"
+    local mem_proc=$!
+
+    wait $task
+
+    local end_millis=$(nxf_date)
+    local tot_time1=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time1=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local ucpu=$(awk -v p1=$cpu_time1 -v p0=$cpu_time0 -v t1=$tot_time1 -v t0=$tot_time0 -v n=$num_cpus 'BEGIN { pct=(p1-p0)/(t1-t0)*100*n; printf("%.0f", pct>0 ? pct : 0) }' )
+
+    local io_stat1=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local i
+    for i in {0..5}; do
+        io_stat1[i]=$((io_stat1[i]-io_stat0[i]))
+    done
+
+    local wall_time=$((end_millis-start_millis))
+    [ $NXF_DEBUG = 1 ] && echo "+++ STATS %CPU=$ucpu TIME=$wall_time I/O=${io_stat1[*]}"
+
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+
+    [ -e /proc/$mem_proc ] && eval "echo 'DONE' >&$mem_fd" || true
+    wait $mem_proc 2>/dev/null || true
+    while [ -e /proc/$mem_proc ]; do nxf_sleep 0.1; done
+}
+
+nxf_trace() {
+    local trace_file=.command.trace
+    touch $trace_file
+    if [[ $(uname) = Darwin ]]; then
+        nxf_trace_mac
+    else
+        nxf_trace_linux
+    fi
+}
+nxf_container_env() {
+cat << EOF
+export PYTHONNOUSERSITE="1"
+export R_PROFILE_USER="/.Rprofile"
+export R_ENVIRON_USER="/.Renviron"
+export JULIA_DEPOT_PATH="/usr/local/share/julia"
+export PATH="\$PATH:/home/katwre/.nextflow/assets/nf-core/ampliseq/bin"
+EOF
+}
+
+nxf_sleep() {
+  sleep $1 2>/dev/null || sleep 1;
+}
+
+nxf_date() {
+    local ts=$(date +%s%3N);
+    if [[ ${#ts} == 10 ]]; then echo ${ts}000
+    elif [[ $ts == *%3N ]]; then echo ${ts/\%3N/000}
+    elif [[ $ts == *3N ]]; then echo ${ts/3N/000}
+    elif [[ ${#ts} == 13 ]]; then echo $ts
+    else echo "Unexpected timestamp value: $ts"; exit 1
+    fi
+}
+
+nxf_env() {
+    echo '============= task environment ============='
+    env | sort | sed "s/\(.*\)AWS\(.*\)=\(.\{6\}\).*/\1AWS\2=\3xxxxxxxxxxxxx/"
+    echo '============= task output =================='
+}
+
+nxf_kill() {
+    declare -a children
+    while read P PP;do
+        children[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    kill_all() {
+        [[ $1 != $$ ]] && kill $1 2>/dev/null || true
+        for i in ${children[$1]:=}; do kill_all $i; done
+    }
+
+    kill_all $1
+}
+
+nxf_mktemp() {
+    local base=${1:-/tmp}
+    mkdir -p "$base"
+    if [[ $(uname) = Darwin ]]; then mktemp -d $base/nxf.XXXXXXXXXX
+    else TMPDIR="$base" mktemp -d -t nxf.XXXXXXXXXX
+    fi
+}
+
+nxf_fs_copy() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  cp -fRL $source $target/$basedir
+}
+
+nxf_fs_move() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  mv -f $source $target/$basedir
+}
+
+nxf_fs_rsync() {
+  rsync -rRl $1 $2
+}
+
+nxf_fs_rclone() {
+  rclone copyto $1 $2/$1
+}
+
+nxf_fs_fcp() {
+  fcp $1 $2/$1
+}
+
+on_exit() {
+    local last_err=$?
+    local exit_status=${nxf_main_ret:=0}
+    [[ ${exit_status} -eq 0 && ${nxf_unstage_ret:=0} -ne 0 ]] && exit_status=${nxf_unstage_ret:=0}
+    [[ ${exit_status} -eq 0 && ${last_err} -ne 0 ]] && exit_status=${last_err}
+    printf -- $exit_status > /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/44/db7f33aac0a741b9ed6b54eb296bd9/.exitcode
+    set +u
+    docker rm $NXF_BOXID &>/dev/null || true
+    exit $exit_status
+}
+
+on_term() {
+    set +e
+    docker stop $NXF_BOXID
+}
+
+nxf_launch() {
+    docker run -i --cpu-shares 2048 --memory 12288m -e "NXF_TASK_WORKDIR" -e "NXF_DEBUG=${NXF_DEBUG:=0}" -v /home/katwre:/home/katwre -w "$NXF_TASK_WORKDIR" -u $(id -u):$(id -g) --name $NXF_BOXID quay.io/biocontainers/mulled-v2-b2ec1fea5791d428eebb8c8ea7409c350d31dada:a447f6b7a6afde38352b24c30ae9cd6e39df95c4-1 /bin/bash -c "eval $(nxf_container_env); bash -C -e -u -o pipefail /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/44/db7f33aac0a741b9ed6b54eb296bd9/.command.run nxf_trace"
+}
+
+nxf_stage() {
+    true
+    # stage input files
+    rm -f stats.ssu.tsv
+    rm -f sbdi/dna.tsv
+    rm -f 1_2.err.svg
+    rm -f level-4.jsonp
+    rm -f level-5.csv
+    rm -f filterAndTrim.args.txt
+    rm -f dist
+    rm -f ancombc/da_barplot/Category-badpairwise10-ASV
+    rm -f RV_qual_stats.svg
+    rm -f ASV_len_orig.tsv
+    rm -f tse/qiime2_TreeSummarizedExperiment.rds
+    rm -f DADA2_stats.tsv
+    rm -f ancombc/da_barplot/Category-mix8-level-2
+    rm -f ancombc/da_barplot/Category-mix8-level-3
+    rm -f sbdi/event.tsv
+    rm -f alpha_diversity/faith_pd_vector
+    rm -f ancombc/da_barplot/Category-mix8-level-4
+    rm -f ancombc/da_barplot/Category-treatment1-ASV
+    rm -f beta_diversity/adonis/jaccard_distance_matrix-treatment1
+    rm -f level-1.jsonp
+    rm -f ancombc_formula/da_barplot/Category-treatment1-level-4
+    rm -f ASV_tax_species.gtdb_R07-RS207.tsv
+    rm -f level-6.csv
+    rm -f beta_diversity/bray_curtis_distance_matrix-mix8
+    rm -f ancombc_formula/da_barplot/Category-treatment1-level-3
+    rm -f level-8.jsonp
+    rm -f ancombc_formula/da_barplot/Category-treatment1-level-2
+    rm -f index.html
+    rm -f level-7.csv
+    rm -f sbdi/annotation.tsv
+    rm -f beta_diversity/adonis/bray_curtis_distance_matrix-mix8
+    rm -f sbdi/asv-table.tsv
+    rm -f beta_diversity/weighted_unifrac_distance_matrix-treatment1
+    rm -f DADA2_table.tsv
+    rm -f nf-core-ampliseq_logo_light_long.png
+    rm -f RV_preprocessed_qual_stats.svg
+    rm -f beta_diversity/adonis/weighted_unifrac_distance_matrix-treatment1
+    rm -f level-8.csv
+    rm -f beta_diversity/jaccard_distance_matrix-treatment1
+    rm -f beta_diversity/adonis/weighted_unifrac_distance_matrix-mix8
+    rm -f taxonomy.tsv
+    rm -f level-5.jsonp
+    rm -f stats.len.tsv
+    rm -f alpha_diversity/evenness_vector
+    rm -f ASV_seqs.ssu.fasta
+    rm -f level-9.csv
+    rm -f report_template.Rmd
+    rm -f beta_diversity/jaccard_distance_matrix-mix8
+    rm -f level-2.jsonp
+    rm -f nf-core_style.css
+    rm -f Samplesheet.tsv
+    rm -f alpha_diversity/shannon_vector
+    rm -f assignTaxonomy.cutadapt.log
+    rm -f phyloseq/qiime2_phyloseq.rds
+    rm -f 1_1.err.svg
+    rm -f count_table_filter_stats.tsv
+    rm -f cutadapt_summary.tsv
+    rm -f WARNING\ The\ sampling\ depth\ of\ 543\ seems\ too\ small\ for\ rarefaction.txt
+    rm -f ancombc/da_barplot/Category-badpairwise10-level-4
+    rm -f FW_preprocessed_qual_stats.svg
+    rm -f ancombc/da_barplot/Category-badpairwise10-level-2
+    rm -f ancombc/da_barplot/Category-badpairwise10-level-3
+    rm -f ASV_table.tsv
+    rm -f Metadata.tsv
+    rm -f level-6.jsonp
+    rm -f level-9.jsonp
+    rm -f tse/dada2_TreeSummarizedExperiment.rds
+    rm -f level-1.csv
+    rm -f multiqc_plots
+    rm -f beta_diversity/adonis/unweighted_unifrac_distance_matrix-treatment1
+    rm -f ASV_post_clustering_filtered.fna
+    rm -f beta_diversity/weighted_unifrac_distance_matrix-mix8
+    rm -f level-2.csv
+    rm -f level-3.jsonp
+    rm -f summary.tsv
+    rm -f sbdi/emof.tsv
+    rm -f ancombc/da_barplot/Category-treatment1-level-2
+    rm -f beta_diversity/bray_curtis_distance_matrix-treatment1
+    rm -f ancombc/da_barplot/Category-treatment1-level-3
+    rm -f ancombc/da_barplot/Category-mix8-ASV
+    rm -f ancombc/da_barplot/Category-treatment1-level-4
+    rm -f beta_diversity/unweighted_unifrac_distance_matrix-treatment1
+    rm -f level-3.csv
+    rm -f beta_diversity/adonis/unweighted_unifrac_distance_matrix-mix8
+    rm -f q2templateassets
+    rm -f ancombc_formula/da_barplot/Category-treatment1-ASV
+    rm -f ASV_post_clustering_filtered.table.tsv
+    rm -f beta_diversity/unweighted_unifrac_distance_matrix-mix8
+    rm -f beta_diversity/adonis/jaccard_distance_matrix-mix8
+    rm -f phyloseq/dada2_phyloseq.rds
+    rm -f FW_qual_stats.svg
+    rm -f level-4.csv
+    rm -f abundance_tables/feature-table.tsv
+    rm -f alpha_diversity/observed_features_vector
+    rm -f level-7.jsonp
+    rm -f beta_diversity/adonis/bray_curtis_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/94/d005c0c1a8f4b798c6d1a0ad3c7122/stats.ssu.tsv stats.ssu.tsv
+    mkdir -p sbdi && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/3b/49c57a7916d58524a296a78d3c3192/dna.tsv sbdi/dna.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/9e/faae1e07246c92ffd51367c9b51f5e/1_2.err.svg 1_2.err.svg
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-4.jsonp level-4.jsonp
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-5.csv level-5.csv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/61/1d6145e41faa85c692da856284bab9/filterAndTrim.args.txt filterAndTrim.args.txt
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/dist dist
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/ff/c3ab53f604d08e91134a5b4a9f5ef3/da_barplot/Category-badpairwise10-ASV ancombc/da_barplot/Category-badpairwise10-ASV
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/da/54218d7bf0885ad494bd0e8b2a3610/RV_qual_stats.svg RV_qual_stats.svg
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/08/a7a59015b0440c30d75ab2a215d55f/ASV_len_orig.tsv ASV_len_orig.tsv
+    mkdir -p tse && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/94/36826e80a1e0cf12ae9980d61ad9bd/qiime2_TreeSummarizedExperiment.rds tse/qiime2_TreeSummarizedExperiment.rds
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/39/849fe51a58735dd402eecdd812b818/DADA2_stats.tsv DADA2_stats.tsv
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/3a/aa246dc1f804d224dcd0478e0d3f5c/da_barplot/Category-mix8-level-2 ancombc/da_barplot/Category-mix8-level-2
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/b0/a2a3f0a391ffe06b9e131023e80a65/da_barplot/Category-mix8-level-3 ancombc/da_barplot/Category-mix8-level-3
+    mkdir -p sbdi && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/3b/49c57a7916d58524a296a78d3c3192/event.tsv sbdi/event.tsv
+    mkdir -p alpha_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/8f/12434db0ea88cb8d64c12da289019b/alpha_diversity/faith_pd_vector alpha_diversity/faith_pd_vector
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/46/006aa281ad8ceb1163deefdd5cb6de/da_barplot/Category-mix8-level-4 ancombc/da_barplot/Category-mix8-level-4
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/fd/58d9a861f884f3a910e0dab6fe3249/da_barplot/Category-treatment1-ASV ancombc/da_barplot/Category-treatment1-ASV
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/26/54178f3b27c49d0579878128f887aa/adonis/jaccard_distance_matrix-treatment1 beta_diversity/adonis/jaccard_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-1.jsonp level-1.jsonp
+    mkdir -p ancombc_formula/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/31/a754ca25effd9a902d7e405ef06fe2/da_barplot/Category-treatment1-level-4 ancombc_formula/da_barplot/Category-treatment1-level-4
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/tmp/66/110bb2f92b4765e13099d4eec41235/ASV_tax_species.gtdb_R07-RS207.tsv ASV_tax_species.gtdb_R07-RS207.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-6.csv level-6.csv
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/8a/8574a5f487910f2721ed21aef602dc/beta_diversity/bray_curtis_distance_matrix-mix8 beta_diversity/bray_curtis_distance_matrix-mix8
+    mkdir -p ancombc_formula/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/6f/b36edf2319da38306ba5459c8e1f17/da_barplot/Category-treatment1-level-3 ancombc_formula/da_barplot/Category-treatment1-level-3
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-8.jsonp level-8.jsonp
+    mkdir -p ancombc_formula/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/1c/baf0724e439c8d1fb262de8cee9e85/da_barplot/Category-treatment1-level-2 ancombc_formula/da_barplot/Category-treatment1-level-2
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/index.html index.html
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-7.csv level-7.csv
+    mkdir -p sbdi && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/f9/0189f603129597d697df68260cc5c2/annotation.tsv sbdi/annotation.tsv
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/6f/66da4eafc9a1056daab587bc41930f/adonis/bray_curtis_distance_matrix-mix8 beta_diversity/adonis/bray_curtis_distance_matrix-mix8
+    mkdir -p sbdi && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/3b/49c57a7916d58524a296a78d3c3192/asv-table.tsv sbdi/asv-table.tsv
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/f7/a47918c2958881a7f6ab592d2de42c/beta_diversity/weighted_unifrac_distance_matrix-treatment1 beta_diversity/weighted_unifrac_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/39/849fe51a58735dd402eecdd812b818/DADA2_table.tsv DADA2_table.tsv
+    ln -s /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/nf-core-ampliseq_logo_light_long.png nf-core-ampliseq_logo_light_long.png
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/81/36940293a7da2a9ac3ad9df9c17ebb/RV_preprocessed_qual_stats.svg RV_preprocessed_qual_stats.svg
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/74/b8fd42cb1e73df2416ddc2a6486ecb/adonis/weighted_unifrac_distance_matrix-treatment1 beta_diversity/adonis/weighted_unifrac_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-8.csv level-8.csv
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/de/7a4fb4fef82b111413ca0c172cef6c/beta_diversity/jaccard_distance_matrix-treatment1 beta_diversity/jaccard_distance_matrix-treatment1
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/e9/67ac2163bed0f5294fd45877c1d152/adonis/weighted_unifrac_distance_matrix-mix8 beta_diversity/adonis/weighted_unifrac_distance_matrix-mix8
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/d6/528160183219780e1042f266964541/taxonomy.tsv taxonomy.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-5.jsonp level-5.jsonp
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/08/a7a59015b0440c30d75ab2a215d55f/stats.len.tsv stats.len.tsv
+    mkdir -p alpha_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/cd/ecf27451d1def940264c13a552742a/alpha_diversity/evenness_vector alpha_diversity/evenness_vector
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/94/d005c0c1a8f4b798c6d1a0ad3c7122/ASV_seqs.ssu.fasta ASV_seqs.ssu.fasta
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-9.csv level-9.csv
+    ln -s /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/report_template.Rmd report_template.Rmd
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/01/fe342e27bc7c8668acbcb97eee33a3/beta_diversity/jaccard_distance_matrix-mix8 beta_diversity/jaccard_distance_matrix-mix8
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-2.jsonp level-2.jsonp
+    ln -s /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/nf-core_style.css nf-core_style.css
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/stage-593d3d6a-2560-404c-97e1-63d95e9ef0b1/62/39be82c118fa0bd7c90b69daf0c133/Samplesheet.tsv Samplesheet.tsv
+    mkdir -p alpha_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/92/023384ba698e0687c95e625d07ace9/alpha_diversity/shannon_vector alpha_diversity/shannon_vector
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/68/cee57dd23aff805c17be3edb6b198e/assignTaxonomy.cutadapt.log assignTaxonomy.cutadapt.log
+    mkdir -p phyloseq && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/88/e4598ccfbf83a1e51114d579687a5f/qiime2_phyloseq.rds phyloseq/qiime2_phyloseq.rds
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/9e/faae1e07246c92ffd51367c9b51f5e/1_1.err.svg 1_1.err.svg
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/de/51cab22af92a0a54e60b82ff187ca9/count_table_filter_stats.tsv count_table_filter_stats.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/4e/532d1f6bdbc974bad7f89c69b206fe/cutadapt_summary.tsv cutadapt_summary.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/d4/7e227f2c567718fe5050a368bb7fef/WARNING\ The\ sampling\ depth\ of\ 543\ seems\ too\ small\ for\ rarefaction.txt WARNING\ The\ sampling\ depth\ of\ 543\ seems\ too\ small\ for\ rarefaction.txt
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/78/e04670c3ac6625c2e8b07733d88ebb/da_barplot/Category-badpairwise10-level-4 ancombc/da_barplot/Category-badpairwise10-level-4
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/be/048c3bbe9b4f33e57a70d645ef3bc4/FW_preprocessed_qual_stats.svg FW_preprocessed_qual_stats.svg
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/31/ec80840ca92bc6a1943bfca33dab99/da_barplot/Category-badpairwise10-level-2 ancombc/da_barplot/Category-badpairwise10-level-2
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/b9/9b8d1e33c5f86e2e7fb3b36add06a3/da_barplot/Category-badpairwise10-level-3 ancombc/da_barplot/Category-badpairwise10-level-3
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/39/849fe51a58735dd402eecdd812b818/ASV_table.tsv ASV_table.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/stage-593d3d6a-2560-404c-97e1-63d95e9ef0b1/80/d7a71a94ecdc0cf8cf26b5e25ff193/Metadata.tsv Metadata.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-6.jsonp level-6.jsonp
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-9.jsonp level-9.jsonp
+    mkdir -p tse && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/45/6df34348b0407e46726330d8cadee6/dada2_TreeSummarizedExperiment.rds tse/dada2_TreeSummarizedExperiment.rds
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-1.csv level-1.csv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/f1/9fccf92025cc6a68699e1204d94938/multiqc_plots multiqc_plots
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/d2/e2c59210e1eeafc392a7d722700d64/adonis/unweighted_unifrac_distance_matrix-treatment1 beta_diversity/adonis/unweighted_unifrac_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/ASV_post_clustering_filtered.fna ASV_post_clustering_filtered.fna
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/72/0ba5b52d27e8f09c27b0a422eeca5a/beta_diversity/weighted_unifrac_distance_matrix-mix8 beta_diversity/weighted_unifrac_distance_matrix-mix8
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-2.csv level-2.csv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-3.jsonp level-3.jsonp
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/b4/f2c956903008da94e91e0804aa28cd/summary.tsv summary.tsv
+    mkdir -p sbdi && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/3b/49c57a7916d58524a296a78d3c3192/emof.tsv sbdi/emof.tsv
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/71/67fe968b713b0da6675eda7f1240e1/da_barplot/Category-treatment1-level-2 ancombc/da_barplot/Category-treatment1-level-2
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/c7/b65dc317c967e05f908e50b2664a14/beta_diversity/bray_curtis_distance_matrix-treatment1 beta_diversity/bray_curtis_distance_matrix-treatment1
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/e8/fa781b7101f3c7be0c082433fb453d/da_barplot/Category-treatment1-level-3 ancombc/da_barplot/Category-treatment1-level-3
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/ae/cec892ef8c1d02f643a79c8d1952df/da_barplot/Category-mix8-ASV ancombc/da_barplot/Category-mix8-ASV
+    mkdir -p ancombc/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/de/22c2d992314d232582620378a0bf77/da_barplot/Category-treatment1-level-4 ancombc/da_barplot/Category-treatment1-level-4
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/09/4e98085bde8dac3b6cc8b483dfe2ea/beta_diversity/unweighted_unifrac_distance_matrix-treatment1 beta_diversity/unweighted_unifrac_distance_matrix-treatment1
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-3.csv level-3.csv
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/b5/fe49f3c0b11a7ebc5b4033e0e3823a/adonis/unweighted_unifrac_distance_matrix-mix8 beta_diversity/adonis/unweighted_unifrac_distance_matrix-mix8
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/q2templateassets q2templateassets
+    mkdir -p ancombc_formula/da_barplot && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/06/9a4a4569ff35c5388d007e85f61576/da_barplot/Category-treatment1-ASV ancombc_formula/da_barplot/Category-treatment1-ASV
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/ASV_post_clustering_filtered.table.tsv ASV_post_clustering_filtered.table.tsv
+    mkdir -p beta_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/e9/e83ee6ee9746cd71fa2413f2060ec5/beta_diversity/unweighted_unifrac_distance_matrix-mix8 beta_diversity/unweighted_unifrac_distance_matrix-mix8
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/01/46a1bdc2425e07d7790745e6de6d8e/adonis/jaccard_distance_matrix-mix8 beta_diversity/adonis/jaccard_distance_matrix-mix8
+    mkdir -p phyloseq && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/68/51b8bde8529aad20aceaa35e13812a/dada2_phyloseq.rds phyloseq/dada2_phyloseq.rds
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/e9/5c1b762bbba7beb122485843a8d486/FW_qual_stats.svg FW_qual_stats.svg
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-4.csv level-4.csv
+    mkdir -p abundance_tables && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/1d/8e5d48998ec561b0dd0cab31170dba/feature-table.tsv abundance_tables/feature-table.tsv
+    mkdir -p alpha_diversity && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/90/af891210e063c8afa6f6094c3d86e4/alpha_diversity/observed_features_vector alpha_diversity/observed_features_vector
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/22/408827e9bb872202f0e333fed5c1ee/barplot/level-7.jsonp level-7.jsonp
+    mkdir -p beta_diversity/adonis && ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/6a/024ee802b9a04fb1eeb1f59f5ef094/adonis/bray_curtis_distance_matrix-treatment1 beta_diversity/adonis/bray_curtis_distance_matrix-treatment1
+}
+
+nxf_unstage_outputs() {
+    true
+}
+
+nxf_unstage_controls() {
+    true
+}
+
+nxf_unstage() {
+    if [[ ${nxf_main_ret:=0} == 0 ]]; then
+        (set -e -o pipefail; (nxf_unstage_outputs | tee -a .command.out) 3>&1 1>&2 2>&3 | tee -a .command.err)
+        nxf_unstage_ret=$?
+    fi
+    nxf_unstage_controls
+}
+
+nxf_main() {
+    trap on_exit EXIT
+    trap on_term TERM INT USR2
+    trap '' USR1
+
+    [[ "${NXF_CHDIR:-}" ]] && cd "$NXF_CHDIR"
+    export NXF_BOXID="nxf-$(dd bs=18 count=1 if=/dev/urandom 2>/dev/null | base64 | tr +/ 0A | tr -d '\r\n')"
+    NXF_SCRATCH=''
+    [[ $NXF_DEBUG > 0 ]] && nxf_env
+    touch /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/44/db7f33aac0a741b9ed6b54eb296bd9/.command.begin
+    set +u
+    set -u
+    [[ $NXF_SCRATCH ]] && cd $NXF_SCRATCH
+    export NXF_TASK_WORKDIR="$PWD"
+    nxf_stage
+
+    set +e
+    (set -o pipefail; (nxf_launch | tee .command.out) 3>&1 1>&2 2>&3 | tee .command.err) &
+    pid=$!
+    wait $pid || nxf_main_ret=$?
+    nxf_unstage
+}
+
+$NXF_ENTRY

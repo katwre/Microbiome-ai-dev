@@ -1,0 +1,16 @@
+Unable to find image 'quay.io/biocontainers/bioconductor-dada2:1.30.0--r43hf17093f_0' locally
+1.30.0--r43hf17093f_0: Pulling from biocontainers/bioconductor-dada2
+fa7e54f17dc0: Pulling fs layer
+4ca545ee6d5d: Pulling fs layer
+b4fada9ea909: Pulling fs layer
+4ca545ee6d5d: Verifying Checksum
+4ca545ee6d5d: Download complete
+fa7e54f17dc0: Verifying Checksum
+fa7e54f17dc0: Download complete
+fa7e54f17dc0: Pull complete
+4ca545ee6d5d: Pull complete
+b4fada9ea909: Verifying Checksum
+b4fada9ea909: Download complete
+b4fada9ea909: Pull complete
+Digest: sha256:4f7d44074376a21a44963226fe192133c8d7f0831863a2e3bdfe704e280235da
+Status: Downloaded newer image for quay.io/biocontainers/bioconductor-dada2:1.30.0--r43hf17093f_0

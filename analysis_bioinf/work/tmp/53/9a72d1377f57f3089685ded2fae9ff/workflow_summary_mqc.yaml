@@ -1,0 +1,67 @@
+id: 'nf-core-ampliseq-summary'
+description: ' - this information is collected when the pipeline is started.'
+section_name: 'nf-core/ampliseq Workflow Summary'
+section_href: 'https://github.com/nf-core/ampliseq'
+plot_type: 'html'
+data: |
+    <p style="font-size:110%"><b>Main arguments</b></p>
+    <dl class="dl-horizontal">
+        <dt>FW_primer</dt><dd><samp>GTGYCAGCMGCCGCGGTAA</samp></dd>
+        <dt>RV_primer</dt><dd><samp>GGACTACNVGGGTWTCTAAT</samp></dd>
+        <dt>input</dt><dd><samp>https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Samplesheet.tsv</samp></dd>
+        <dt>metadata</dt><dd><samp>https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Metadata.tsv</samp></dd>
+        <dt>outdir</dt><dd><samp>results_test</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>ASV post processing</b></p>
+    <dl class="dl-horizontal">
+        <dt>filter_ssu</dt><dd><samp>bac</samp></dd>
+        <dt>max_len_asv</dt><dd><samp>255</samp></dd>
+        <dt>vsearch_cluster</dt><dd><samp>true</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Taxonomic assignment</b></p>
+    <dl class="dl-horizontal">
+        <dt>cut_dada_ref_taxonomy</dt><dd><samp>true</samp></dd>
+        <dt>dada_ref_taxonomy</dt><dd><samp>gtdb=R07-RS207</samp></dd>
+        <dt>qiime_ref_taxonomy</dt><dd><samp>greengenes85</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>ASV filtering</b></p>
+    <dl class="dl-horizontal">
+        <dt>min_frequency</dt><dd><samp>10</samp></dd>
+        <dt>min_samples</dt><dd><samp>2</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Downstream analysis</b></p>
+    <dl class="dl-horizontal">
+        <dt>metadata_category_barplot</dt><dd><samp>treatment1,badpairwise10</samp></dd>
+        <dt>qiime_adonis_formula</dt><dd><samp>treatment1,mix8</samp></dd>
+        <dt>sbdiexport</dt><dd><samp>true</samp></dd>
+        <dt>tax_agglom_max</dt><dd><samp>4</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Differential abundance analysis</b></p>
+    <dl class="dl-horizontal">
+        <dt>ancombc</dt><dd><samp>true</samp></dd>
+        <dt>ancombc_effect_size</dt><dd><samp>2</samp></dd>
+        <dt>ancombc_formula</dt><dd><samp>treatment1</samp></dd>
+        <dt>ancombc_formula_reflvl</dt><dd><samp>treatment1::b</samp></dd>
+        <dt>ancombc_significance</dt><dd><samp>0.00001</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Generic options</b></p>
+    <dl class="dl-horizontal">
+        <dt>trace_report_suffix</dt><dd><samp>2026-01-08_18-48-25</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Institutional config options</b></p>
+    <dl class="dl-horizontal">
+        <dt>config_profile_description</dt><dd><samp>Minimal test dataset to check pipeline function</samp></dd>
+        <dt>config_profile_name</dt><dd><samp>Test profile</samp></dd>
+    </dl>
+    <p style="font-size:110%"><b>Core Nextflow options</b></p>
+    <dl class="dl-horizontal">
+        <dt>configFiles</dt><dd><samp>/home/katwre/.nextflow/assets/nf-core/ampliseq/nextflow.config</samp></dd>
+        <dt>containerEngine</dt><dd><samp>docker</samp></dd>
+        <dt>launchDir</dt><dd><samp>/home/katwre/projects/Microbiome-ai-dev/analysis_bioinf</samp></dd>
+        <dt>profile</dt><dd><samp>test,docker</samp></dd>
+        <dt>projectDir</dt><dd><samp>/home/katwre/.nextflow/assets/nf-core/ampliseq</samp></dd>
+        <dt>revision</dt><dd><samp>master</samp></dd>
+        <dt>runName</dt><dd><samp>admiring_faggin</samp></dd>
+        <dt>userName</dt><dd><samp>katwre</samp></dd>
+        <dt>workDir</dt><dd><samp>/home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work</samp></dd>
+    </dl>

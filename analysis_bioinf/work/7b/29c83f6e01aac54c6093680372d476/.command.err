@@ -1,0 +1,19 @@
+Unable to find image 'quay.io/biocontainers/barrnap:0.9--hdfd78af_4' locally
+0.9--hdfd78af_4: Pulling from biocontainers/barrnap
+cefc4d495539: Pulling fs layer
+4ca545ee6d5d: Pulling fs layer
+8752dc32752a: Pulling fs layer
+4ca545ee6d5d: Verifying Checksum
+4ca545ee6d5d: Download complete
+cefc4d495539: Download complete
+cefc4d495539: Pull complete
+4ca545ee6d5d: Pull complete
+8752dc32752a: Verifying Checksum
+8752dc32752a: Download complete
+8752dc32752a: Pull complete
+Digest: sha256:e018f6307a956736cb0d3b7ce2ca0bc53fb5929d52c9d843dbf369cffa1c1e99
+Status: Downloaded newer image for quay.io/biocontainers/barrnap:0.9--hdfd78af_4
+index file /tmp/2BiN6a7yxN.fai not found, generating...
+index file /tmp/MLNpsuyUQL.fai not found, generating...
+index file /tmp/x5ACAqaYWs.fai not found, generating...
+index file /tmp/ru4bXYQvV3.fai not found, generating...

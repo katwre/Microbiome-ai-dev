@@ -1,0 +1,6 @@
+id	treatment1	mix8	badpairwise10	shannon_entropy
+#q2:types	categorical	categorical	categorical	numeric
+sampleID_1	b	2		3.15139199833263
+sampleID_2	b	2	2	2.99868785180975
+sampleID_1a	a	a	2	4.3741944458113
+sampleID_2a	a	a	a	4.38264247052401

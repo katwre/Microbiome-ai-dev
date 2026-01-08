@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelLimit": 1000}, "axisY": {"titleAlign": "left", "titleAngle": 0, "titleY": -10}, "legend": {"cornerRadius": 10, "padding": 10, "strokeColor": "gray"}}, "layer": [{"mark": {"type": "bar"}, "encoding": {"color": {"field": "enriched", "sort": "descending", "title": "Relative to reference", "type": "nominal"}, "tooltip": [{"field": "feature", "type": "nominal"}, {"field": "lfc", "type": "quantitative"}, {"field": "q_val", "type": "quantitative"}, {"field": "se", "type": "quantitative"}, {"field": "error-lower", "type": "quantitative"}, {"field": "error-upper", "type": "quantitative"}], "x": {"field": "lfc", "title": "Log Fold Change (LFC)", "type": "quantitative"}, "y": {"field": "y_label", "sort": {"field": "lfc", "op": "min", "order": "descending"}, "title": "Feature ID", "type": "nominal"}}}, {"mark": {"type": "rule", "color": "black"}, "encoding": {"x": {"field": "error-lower", "type": "quantitative"}, "x2": {"field": "error-upper"}, "y": {"field": "y_label", "sort": {"field": "lfc", "op": "min", "order": "descending"}, "title": "Feature ID", "type": "nominal"}}}], "data": {"name": "data-a1b1098acff266d52ae4d1cef254eab1"}, "title": "treatment1b", "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-a1b1098acff266d52ae4d1cef254eab1": [{"id": "25e119f38effd7d58bf3442bd40eaf00", "lfc": 5.038658596563967, "se": 0.3002697280067001, "q_val": 1.0857737452522672e-61, "y_label": "25e119f38effd7d58bf3442bd40eaf00", "feature": "25e119f38effd7d58bf3442bd40eaf00", "enriched": "enriched", "error-upper": 5.338928324570667, "error-lower": 4.738388868557267}, {"id": "7e7deb01f0491d33ecb87427fcbeb1ee", "lfc": 3.257594722326571, "se": 0.3267709603453903, "q_val": 4.1643848984403693e-22, "y_label": "7e7deb01f0491d33ecb87427fcbeb1ee", "feature": "7e7deb01f0491d33ecb87427fcbeb1ee", "enriched": "enriched", "error-upper": 3.5843656826719617, "error-lower": 2.9308237619811806}, {"id": "7346ee25c4de4df48f80d736342c1c02", "lfc": 2.560463456942037, "se": 0.1127391107643025, "q_val": 1.2096869790800584e-112, "y_label": "7346ee25c4de4df48f80d736342c1c02", "feature": "7346ee25c4de4df48f80d736342c1c02", "enriched": "enriched", "error-upper": 2.6732025677063396, "error-lower": 2.4477243461777345}, {"id": "67e959ec1398cee2946858ecda5af98b", "lfc": 2.819860353649621, "se": 0.2195305240285066, "q_val": 2.478648002148784e-36, "y_label": "67e959ec1398cee2946858ecda5af98b", "feature": "67e959ec1398cee2946858ecda5af98b", "enriched": "enriched", "error-upper": 3.0393908776781275, "error-lower": 2.6003298296211144}, {"id": "c1cd0bc45f873697ab9156e7147e8d76", "lfc": -2.2529642011934268, "se": 0.1386573491799941, "q_val": 7.103924403136507e-58, "y_label": "c1cd0bc45f873697ab9156e7147e8d76", "feature": "c1cd0bc45f873697ab9156e7147e8d76", "enriched": "depleted", "error-upper": -2.1143068520134327, "error-lower": -2.391621550373421}, {"id": "59dd6d3f3f896c4309537cf26c3597a3", "lfc": 4.29954266834118, "se": 0.104949806263367, "q_val": 0.0, "y_label": "59dd6d3f3f896c4309537cf26c3597a3", "feature": "59dd6d3f3f896c4309537cf26c3597a3", "enriched": "enriched", "error-upper": 4.404492474604547, "error-lower": 4.194592862077814}, {"id": "f86222ce0aa7c48d5994451baf572b60", "lfc": 4.094582939112407, "se": 0.3195900493874802, "q_val": 3.6528396299853936e-36, "y_label": "f86222ce0aa7c48d5994451baf572b60", "feature": "f86222ce0aa7c48d5994451baf572b60", "enriched": "enriched", "error-upper": 4.414172988499888, "error-lower": 3.774992889724927}, {"id": "b7d6cf3f7467ca45087ca083796a0af0", "lfc": 5.548131039531087, "se": 0.1160105604273645, "q_val": 0.0, "y_label": "b7d6cf3f7467ca45087ca083796a0af0", "feature": "b7d6cf3f7467ca45087ca083796a0af0", "enriched": "enriched", "error-upper": 5.664141599958452, "error-lower": 5.432120479103723}, {"id": "3421464bea79a54e7eef62009457230b", "lfc": -2.703915198404455, "se": 0.0962113611847564, "q_val": 3.1594043666641764e-172, "y_label": "3421464bea79a54e7eef62009457230b", "feature": "3421464bea79a54e7eef62009457230b", "enriched": "depleted", "error-upper": -2.6077038372196983, "error-lower": -2.8001265595892115}, {"id": "8b91e5b1c412877f96a4a342ab6dc680", "lfc": 3.393334771264321, "se": 0.594372328208067, "q_val": 1.4764227528516098e-07, "y_label": "8b91e5b1c412877f96a4a342ab6dc680", "feature": "8b91e5b1c412877f96a4a342ab6dc680", "enriched": "enriched", "error-upper": 3.987707099472388, "error-lower": 2.7989624430562543}, {"id": "1f8747026500ce37ab66b935d9b1b53e", "lfc": -3.731648369253772, "se": 0.0962043923928148, "q_val": 0.0, "y_label": "1f8747026500ce37ab66b935d9b1b53e", "feature": "1f8747026500ce37ab66b935d9b1b53e", "enriched": "depleted", "error-upper": -3.635443976860957, "error-lower": -3.8278527616465867}, {"id": "3ebe761bfb1238c87195d431f41bf976", "lfc": 3.0149421604960094, "se": 0.2753755845661529, "q_val": 1.5542750643913397e-26, "y_label": "3ebe761bfb1238c87195d431f41bf976", "feature": "3ebe761bfb1238c87195d431f41bf976", "enriched": "enriched", "error-upper": 3.290317745062162, "error-lower": 2.7395665759298566}, {"id": "fc3f584449d707e80bd4aa0efcd65508", "lfc": 3.233199640241855, "se": 0.4372920046214851, "q_val": 2.4278339986903744e-12, "y_label": "fc3f584449d707e80bd4aa0efcd65508", "feature": "fc3f584449d707e80bd4aa0efcd65508", "enriched": "enriched", "error-upper": 3.6704916448633402, "error-lower": 2.79590763562037}, {"id": "da13eb51a23731d1542076afd2a4882d", "lfc": 4.155454657548646, "se": 0.1270858229901104, "q_val": 6.165576328915427e-233, "y_label": "da13eb51a23731d1542076afd2a4882d", "feature": "da13eb51a23731d1542076afd2a4882d", "enriched": "enriched", "error-upper": 4.282540480538756, "error-lower": 4.0283688345585364}, {"id": "ec03d66fcea8850ab39fe2bce3814f30", "lfc": -2.127993328958961, "se": 0.1144953487608805, "q_val": 1.380466143097526e-75, "y_label": "ec03d66fcea8850ab39fe2bce3814f30", "feature": "ec03d66fcea8850ab39fe2bce3814f30", "enriched": "depleted", "error-upper": -2.0134979801980806, "error-lower": -2.2424886777198414}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>

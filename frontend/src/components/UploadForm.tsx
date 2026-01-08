@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Upload, FileText, X, Mail, CheckCircle2, AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -14,7 +15,7 @@ interface UploadedFile {
 interface FormState {
   projectName: string;
   email: string;
-  dataType: "tsv" | "qiime2";
+  dataType: "single-end" | "paired-end";
   files: UploadedFile[];
   sendEmail: boolean;
 }
@@ -31,13 +32,15 @@ interface SubmittedState {
 }
 
 const UploadForm = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState<FormState>({
     projectName: "",
     email: "",
-    dataType: "tsv",
+    dataType: "single-end",
     files: [],
     sendEmail: true,
   });
+  const [actualFiles, setActualFiles] = useState<File[]>([]);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -62,7 +65,11 @@ const UploadForm = () => {
     }
 
     if (form.files.length === 0) {
-      newErrors.files = "Please upload at least one file";
+      newErrors.files = "Please upload at least one FASTQ file";
+    } else if (form.dataType === "single-end" && form.files.length !== 1) {
+      newErrors.files = "Single-end sequencing requires exactly 1 FASTQ file";
+    } else if (form.dataType === "paired-end" && form.files.length !== 2) {
+      newErrors.files = "Paired-end sequencing requires exactly 2 FASTQ files (R1 and R2)";
     }
 
     setErrors(newErrors);
@@ -83,29 +90,31 @@ const UploadForm = () => {
     e.preventDefault();
     setIsDragging(false);
     
-    const droppedFiles = Array.from(e.dataTransfer.files).map((file) => ({
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    const fileMetadata = droppedFiles.map((file) => ({
       name: file.name,
       size: file.size,
     }));
 
     setForm((prev) => ({
       ...prev,
-      files: [...prev.files, ...droppedFiles],
+      files: [...prev.files, ...fileMetadata],
     }));
+    
+    setActualFiles(prev => [...prev, ...droppedFiles]);
     setErrors((prev) => ({ ...prev, files: undefined }));
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files).map((file) => ({
-        name: file.name,
-        size: file.size,
-      }));
-
+      const selectedFiles = Array.from(e.target.files);
+      
       setForm((prev) => ({
         ...prev,
-        files: [...prev.files, ...selectedFiles],
+        files: [...prev.files, ...selectedFiles.map(f => ({ name: f.name, size: f.size }))],
       }));
+      
+      setActualFiles(prev => [...prev, ...selectedFiles]);
       setErrors((prev) => ({ ...prev, files: undefined }));
     }
   };
@@ -115,6 +124,7 @@ const UploadForm = () => {
       ...prev,
       files: prev.files.filter((_, i) => i !== index),
     }));
+    setActualFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -134,14 +144,42 @@ const UploadForm = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Create FormData for multipart/form-data request
+      const formData = new FormData();
+      formData.append('project_name', form.projectName);
+      formData.append('email', form.email);
+      formData.append('data_type', form.dataType);
+      formData.append('send_email', form.sendEmail.toString());
+      
+      // Add actual file objects from state
+      actualFiles.forEach(file => {
+        formData.append('files', file);
+      });
 
-    setIsSubmitting(false);
-    setSubmitted({
-      jobId: generateJobId(),
-      status: "Queued",
-    });
+      // Call Django API
+      const response = await fetch('http://localhost:8000/api/jobs/upload/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      setIsSubmitting(false);
+      setSubmitted({
+        jobId: data.job_id,
+        status: data.status,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      setIsSubmitting(false);
+      setErrors({ files: error instanceof Error ? error.message : 'Upload failed. Please try again.' });
+    }
   };
 
   const resetForm = () => {
@@ -149,10 +187,11 @@ const UploadForm = () => {
     setForm({
       projectName: "",
       email: "",
-      dataType: "tsv",
+      dataType: "single-end",
       files: [],
       sendEmail: true,
     });
+    setActualFiles([]);
     setErrors({});
   };
 
@@ -183,7 +222,10 @@ const UploadForm = () => {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button className="btn-gradient">
+            <Button 
+              className="btn-gradient"
+              onClick={() => navigate(`/jobs/${submitted.jobId}`)}
+            >
               Track status
             </Button>
             <Button variant="outline" onClick={resetForm}>
@@ -257,25 +299,25 @@ const UploadForm = () => {
 
         {/* Data Type */}
         <div className="space-y-3">
-          <Label>Data Type</Label>
+          <Label>Sequencing Type</Label>
           <RadioGroup
             value={form.dataType}
-            onValueChange={(value: "tsv" | "qiime2") =>
+            onValueChange={(value: "single-end" | "paired-end") =>
               setForm((prev) => ({ ...prev, dataType: value }))
             }
             className="flex gap-4"
             name="data_type"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="tsv" id="tsv" />
-              <Label htmlFor="tsv" className="cursor-pointer font-normal">
-                TSV tables
+              <RadioGroupItem value="single-end" id="single-end" />
+              <Label htmlFor="single-end" className="cursor-pointer font-normal">
+                Single-end (1 FASTQ file)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="qiime2" id="qiime2" />
-              <Label htmlFor="qiime2" className="cursor-pointer font-normal">
-                QIIME2 artifacts
+              <RadioGroupItem value="paired-end" id="paired-end" />
+              <Label htmlFor="paired-end" className="cursor-pointer font-normal">
+                Paired-end (2 FASTQ files)
               </Label>
             </div>
           </RadioGroup>
@@ -300,16 +342,16 @@ const UploadForm = () => {
               multiple
               className="hidden"
               onChange={handleFileInput}
-              accept=".tsv,.txt,.qza,.qzv"
+              accept=".fastq.gz,.fq.gz"
             />
             <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <p className="mb-1 text-sm font-medium text-foreground">
-              Drag & drop files here, or click to browse
+              Drag & drop FASTQ files here, or click to browse
             </p>
             <p className="text-xs text-muted-foreground">
-              {form.dataType === "tsv"
-                ? "Accepts .tsv and .txt files"
-                : "Accepts .qza and .qzv files"}
+              {form.dataType === "single-end"
+                ? "Upload 1 FASTQ file (.fastq.gz or .fq.gz)"
+                : "Upload 2 FASTQ files - R1 and R2 (.fastq.gz or .fq.gz)"}
             </p>
           </div>
           {errors.files && (

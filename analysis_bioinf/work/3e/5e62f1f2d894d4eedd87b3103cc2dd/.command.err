@@ -1,0 +1,45 @@
+Unable to find image 'quay.io/biocontainers/python:3.8.3' locally
+3.8.3: Pulling from biocontainers/python
+a3ed95caeb02: Pulling fs layer
+77c6c00e8b61: Pulling fs layer
+3aaade50789a: Pulling fs layer
+00cf8b9f3d2a: Pulling fs layer
+7ff999a2256f: Pulling fs layer
+a3ed95caeb02: Waiting
+d2ba336f2e44: Pulling fs layer
+77c6c00e8b61: Waiting
+dfda3e01f2b6: Pulling fs layer
+3aaade50789a: Waiting
+10c3bb32200b: Pulling fs layer
+00cf8b9f3d2a: Waiting
+651092b9f421: Pulling fs layer
+7ff999a2256f: Waiting
+d2ba336f2e44: Waiting
+dfda3e01f2b6: Waiting
+10c3bb32200b: Waiting
+651092b9f421: Waiting
+a3ed95caeb02: Download complete
+a3ed95caeb02: Pull complete
+77c6c00e8b61: Verifying Checksum
+77c6c00e8b61: Pull complete
+3aaade50789a: Verifying Checksum
+3aaade50789a: Download complete
+3aaade50789a: Pull complete
+00cf8b9f3d2a: Verifying Checksum
+00cf8b9f3d2a: Download complete
+00cf8b9f3d2a: Pull complete
+7ff999a2256f: Verifying Checksum
+7ff999a2256f: Download complete
+7ff999a2256f: Pull complete
+d2ba336f2e44: Download complete
+d2ba336f2e44: Pull complete
+dfda3e01f2b6: Verifying Checksum
+dfda3e01f2b6: Download complete
+dfda3e01f2b6: Pull complete
+10c3bb32200b: Download complete
+10c3bb32200b: Pull complete
+651092b9f421: Verifying Checksum
+651092b9f421: Download complete
+651092b9f421: Pull complete
+Digest: sha256:4965e8f9078ba50c7148d49dcbc41c1827f21cb74329013deeca366204f0e317
+Status: Downloaded newer image for quay.io/biocontainers/python:3.8.3

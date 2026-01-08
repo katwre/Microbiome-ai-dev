@@ -1,0 +1,38 @@
+Unable to find image 'quay.io/biocontainers/mulled-v2-b2ec1fea5791d428eebb8c8ea7409c350d31dada:a447f6b7a6afde38352b24c30ae9cd6e39df95c4-1' locally
+a447f6b7a6afde38352b24c30ae9cd6e39df95c4-1: Pulling from biocontainers/mulled-v2-b2ec1fea5791d428eebb8c8ea7409c350d31dada
+aa44502a478a: Pulling fs layer
+bef3901422b5: Pulling fs layer
+b6572cc046f2: Pulling fs layer
+6dbbfe98ccd4: Pulling fs layer
+4ca545ee6d5d: Pulling fs layer
+f97db91f9663: Pulling fs layer
+4ca545ee6d5d: Waiting
+6dbbfe98ccd4: Waiting
+f97db91f9663: Waiting
+b6572cc046f2: Verifying Checksum
+b6572cc046f2: Download complete
+bef3901422b5: Verifying Checksum
+bef3901422b5: Download complete
+6dbbfe98ccd4: Verifying Checksum
+6dbbfe98ccd4: Download complete
+4ca545ee6d5d: Verifying Checksum
+4ca545ee6d5d: Download complete
+aa44502a478a: Download complete
+aa44502a478a: Pull complete
+bef3901422b5: Pull complete
+b6572cc046f2: Pull complete
+6dbbfe98ccd4: Pull complete
+4ca545ee6d5d: Pull complete
+f97db91f9663: Verifying Checksum
+f97db91f9663: Download complete
+f97db91f9663: Pull complete
+Digest: sha256:44acc2e05f3fd6590635df6725809ba20988e95ae311e4f6d3bf8f20fa5d8e72
+Status: Downloaded newer image for quay.io/biocontainers/mulled-v2-b2ec1fea5791d428eebb8c8ea7409c350d31dada:a447f6b7a6afde38352b24c30ae9cd6e39df95c4-1
+
+
+processing file: template.Rmd
+Fontconfig error: No writable cache directories
+output file: template.knit.md
+
+
+Output created: summary_report.html

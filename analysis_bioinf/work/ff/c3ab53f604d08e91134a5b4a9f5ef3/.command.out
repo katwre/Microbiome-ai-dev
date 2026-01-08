@@ -1,0 +1,12 @@
+R version 4.3.3 (2024-02-29) 
+Running external command line application(s). This may print messages to stdout and/or stderr.
+The command(s) being run are below. These commands cannot be manually re-run as they will depend on temporary files that no longer exist.
+
+Command: run_ancombc.R --inp_abundances_path /tmp/tmp_g72fpwo/input.biom.tsv --inp_metadata_path /tmp/tmp_g72fpwo/input.map.txt --md_column_types {"treatment1": "categorical", "bad3": "categorical", "bad4": "categorical", "bad5": "numeric", "num6": "numeric", "num7": "numeric", "mix8": "categorical", "bad9": "categorical", "badpairwise10": "categorical", "materialSampleID": "categorical", "target_gene": "categorical"} --formula badpairwise10 --p_adj_method holm --prv_cut 0.1 --lib_cut 500 --reference_levels ['badpairwise10::2'] --tol 1e-05 --max_iter 100 --conserve True --alpha 0.05 --output_loaf /tmp/qiime2/uid=#1000/processes/32-1767895398.07@uid=#1000/tmp/q2-OutPath-3silm97g
+
+Saved FeatureData[DifferentialAbundance] to: badpairwise10.differentials.qza
+Exported badpairwise10.differentials.qza as DataLoafPackageDirFmt to directory differentials/Category-badpairwise10-ASV
+Saved Visualization to: badpairwise10.differentials.qzv
+Exported badpairwise10.differentials.qzv as Visualization to directory differentials/Category-badpairwise10-ASV
+Saved Visualization to: badpairwise10.da_barplot.qzv
+Exported badpairwise10.da_barplot.qzv as Visualization to directory da_barplot/Category-badpairwise10-ASV

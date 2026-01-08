@@ -1,0 +1,20 @@
+#!/usr/bin/env bash -C -e -u -o pipefail
+export XDG_CONFIG_HOME="./xdgconfig"
+export MPLCONFIGDIR="./mplconfigdir"
+export NUMBA_CACHE_DIR="./numbacache"
+
+qiime diversity adonis \
+    --p-n-jobs 2 \
+    --i-distance-matrix jaccard_distance_matrix.qza \
+    --m-metadata-file Metadata.tsv \
+    --o-visualization jaccard_distance_matrix_adonis.qzv \
+     \
+    --p-formula "treatment1"
+qiime tools export \
+    --input-path jaccard_distance_matrix_adonis.qzv \
+    --output-path adonis/jaccard_distance_matrix-treatment1
+
+cat <<-END_VERSIONS > versions.yml
+"NFCORE_AMPLISEQ:AMPLISEQ:QIIME2_DIVERSITY:QIIME2_DIVERSITY_ADONIS":
+    qiime2: $( qiime --version | sed '1!d;s/.* //' )
+END_VERSIONS

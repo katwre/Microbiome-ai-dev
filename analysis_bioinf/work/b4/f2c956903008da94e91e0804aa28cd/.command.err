@@ -1,0 +1,16 @@
+Unable to find image 'quay.io/biocontainers/python:3.9' locally
+3.9: Pulling from biocontainers/python
+a3ed95caeb02: Already exists
+77c6c00e8b61: Already exists
+3aaade50789a: Already exists
+00cf8b9f3d2a: Already exists
+7ff999a2256f: Already exists
+d2ba336f2e44: Already exists
+dfda3e01f2b6: Already exists
+a3ed95caeb02: Already exists
+10c3bb32200b: Already exists
+5eba9f7cbc77: Pulling fs layer
+5eba9f7cbc77: Download complete
+5eba9f7cbc77: Pull complete
+Digest: sha256:c6b961c4c7bbfedddc8bbce9431ce550621c4fe526bb0f11a73c314507ec730d
+Status: Downloaded newer image for quay.io/biocontainers/python:3.9

@@ -19,7 +19,7 @@ const Index = () => {
                 Analyze your microbiome data in minutes
               </h1>
               <p className="mb-8 text-lg text-muted-foreground sm:text-xl">
-                Upload your 16S/ITS feature tables and get a comprehensive report with{" "}
+                Upload your raw 16S/ITS sequencing data (FASTQ files) and get a comprehensive report with{" "}
                 <span className="font-medium text-foreground">alpha diversity</span>,{" "}
                 <span className="font-medium text-foreground">beta diversity</span>, and{" "}
                 <span className="font-medium text-foreground">taxonomic composition</span>{" "}

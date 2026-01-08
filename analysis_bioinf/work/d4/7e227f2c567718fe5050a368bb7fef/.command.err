@@ -1,0 +1,50 @@
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/io.py:365: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  series = series.replace('', np.nan).infer_objects(copy=False)
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/skbio/util/_warning.py:60: UserWarning: observed_otus is deprecated as of 0.6.0.
+  warn(f"{func.__name__} is deprecated as of {ver}.")
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/skbio/stats/ordination/_principal_coordinate_analysis.py:146: RuntimeWarning: The result contains negative eigenvalues. Please compare their magnitude with the magnitude of some of the largest positive eigenvalues. If the negative ones are smaller, it's probably safe to ignore them, but if they are large in magnitude, the results won't be useful. See the Notes section for more details. The smallest eigenvalue is -0.0015883739417205866 and the largest is 0.13679203502891385.
+  warn(
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing
+/opt/conda/envs/qiime2-amplicon-2024.10/lib/python3.10/site-packages/qiime2/metadata/metadata.py:610: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '[nan nan nan]' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+  series[missing.index] = missing

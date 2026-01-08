@@ -1,0 +1,7 @@
+Unable to find image 'quay.io/nf-core/ubuntu:20.04' locally
+20.04: Pulling from nf-core/ubuntu
+99803d4b97f3: Pulling fs layer
+99803d4b97f3: Download complete
+99803d4b97f3: Pull complete
+Digest: sha256:59e9d08d8dc153bfc704de15af5b14ac82f5ac695377fa29dd5087b6fea7942e
+Status: Downloaded newer image for quay.io/nf-core/ubuntu:20.04

@@ -1,0 +1,17 @@
+Unable to find image 'quay.io/biocontainers/bioconductor-biostrings:2.58.0--r40h037d062_0' locally
+2.58.0--r40h037d062_0: Pulling from biocontainers/bioconductor-biostrings
+a3ed95caeb02: Already exists
+77c6c00e8b61: Already exists
+3aaade50789a: Already exists
+00cf8b9f3d2a: Already exists
+7ff999a2256f: Already exists
+d2ba336f2e44: Already exists
+dfda3e01f2b6: Already exists
+a3ed95caeb02: Already exists
+10c3bb32200b: Already exists
+3e33ffd04243: Pulling fs layer
+3e33ffd04243: Verifying Checksum
+3e33ffd04243: Download complete
+3e33ffd04243: Pull complete
+Digest: sha256:4514c0c1b7abb38651d9632bb5b3d7bb235b037385b1dab5924cf0fc58cf77a8
+Status: Downloaded newer image for quay.io/biocontainers/bioconductor-biostrings:2.58.0--r40h037d062_0

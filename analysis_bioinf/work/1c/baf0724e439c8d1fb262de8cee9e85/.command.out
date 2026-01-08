@@ -1,0 +1,14 @@
+Saved FeatureTable[Frequency] to: lvl2-treatment1.qza
+Exported lvl2-treatment1.qza as BIOMV210DirFmt to directory exported/
+R version 4.3.3 (2024-02-29) 
+Running external command line application(s). This may print messages to stdout and/or stderr.
+The command(s) being run are below. These commands cannot be manually re-run as they will depend on temporary files that no longer exist.
+
+Command: run_ancombc.R --inp_abundances_path /tmp/tmpn7ajo5_y/input.biom.tsv --inp_metadata_path /tmp/tmpn7ajo5_y/input.map.txt --md_column_types {"treatment1": "categorical", "bad3": "categorical", "bad4": "categorical", "bad5": "numeric", "num6": "numeric", "num7": "numeric", "mix8": "categorical", "bad9": "categorical", "badpairwise10": "categorical", "materialSampleID": "categorical", "target_gene": "categorical"} --formula treatment1 --p_adj_method holm --prv_cut 0.1 --lib_cut 500 --reference_levels ['treatment1::b'] --tol 1e-05 --max_iter 100 --conserve True --alpha 0.05 --output_loaf /tmp/qiime2/uid=#1000/processes/662-1767895128.75@uid=#1000/tmp/q2-OutPath-8azjxzi5
+
+Saved FeatureData[DifferentialAbundance] to: lvl2-treatment1.differentials.qza
+Exported lvl2-treatment1.differentials.qza as DataLoafPackageDirFmt to directory differentials/Category-treatment1-level-2
+Saved Visualization to: lvl2-treatment1.differentials.qzv
+Exported lvl2-treatment1.differentials.qzv as Visualization to directory differentials/Category-treatment1-level-2
+Saved Visualization to: lvl2-treatment1.da_barplot.qzv
+Exported lvl2-treatment1.da_barplot.qzv as Visualization to directory da_barplot/Category-treatment1-level-2

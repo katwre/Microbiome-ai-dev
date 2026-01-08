@@ -1,0 +1,20 @@
+Unable to find image 'quay.io/biocontainers/r-tidyverse:1.2.1' locally
+1.2.1: Pulling from biocontainers/r-tidyverse
+a3ed95caeb02: Already exists
+b0dc45cd432d: Already exists
+9466b3513669: Already exists
+ddd482ea7b54: Already exists
+4d69f833b9d8: Already exists
+e7c454e5167d: Already exists
+e38092b005c0: Already exists
+a3ed95caeb02: Already exists
+f879b42dfe2b: Already exists
+f32d0265c0a0: Pulling fs layer
+f32d0265c0a0: Verifying Checksum
+f32d0265c0a0: Download complete
+f32d0265c0a0: Pull complete
+Digest: sha256:f4555efa35cb4b54fbfa59a15bb57ff758ba845577b7dcc107a47d1b6aa8807f
+Status: Downloaded newer image for quay.io/biocontainers/r-tidyverse:1.2.1
+Warning message:
+In C_valid_tz(tzone) :
+  System timezone name is unknown. Please set environment variable TZ.

@@ -1,0 +1,562 @@
+Jan-08 18:47:01.344 [main] DEBUG nextflow.cli.Launcher - $> nextflow run nf-core/ampliseq -profile test,docker
+Jan-08 18:47:01.384 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.10.2
+Jan-08 18:47:01.399 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/katwre/.nextflow/plugins; core-plugins: nf-amazon@3.4.2,nf-azure@1.20.2,nf-cloudcache@0.5.0,nf-codecommit@0.5.0,nf-console@1.3.0,nf-google@1.23.3,nf-k8s@1.2.2,nf-tower@1.17.3,nf-wave@1.16.1
+Jan-08 18:47:01.416 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Jan-08 18:47:01.417 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Jan-08 18:47:01.419 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Jan-08 18:47:01.429 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
+Jan-08 18:47:01.506 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Jan-08 18:47:01.513 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /home/katwre/.nextflow/scm
+Jan-08 18:47:02.047 [main] DEBUG nextflow.scm.AssetManager - Git config: /home/katwre/.nextflow/assets/nf-core/ampliseq/.git/config; branch: master; remote: origin; url: https://github.com/nf-core/ampliseq.git
+Jan-08 18:47:02.065 [main] DEBUG nextflow.scm.RepositoryFactory - Found Git repository result: [RepositoryFactory]
+Jan-08 18:47:02.071 [main] DEBUG nextflow.scm.AssetManager - Git config: /home/katwre/.nextflow/assets/nf-core/ampliseq/.git/config; branch: master; remote: origin; url: https://github.com/nf-core/ampliseq.git
+Jan-08 18:47:02.734 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /home/katwre/.nextflow/assets/nf-core/ampliseq/nextflow.config
+Jan-08 18:47:02.735 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/katwre/.nextflow/assets/nf-core/ampliseq/nextflow.config
+Jan-08 18:47:02.741 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Jan-08 18:47:03.685 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [bih, cfc_dev, uzl_omics, ifb_core, embl_hd, denbi_qbic, test_doubleprimers, alice, mjolnir_globe, uppmax, giga, test_pacbio_its, incliva, ilifu, ki_luria, uge, icr_alma, rosalind_uge, lugh, mccleary, unibe_ibu, vai, czbiohub_aws, jax, roslin, iris, tes, scw, unc_longleaf, test_sintax, tigem, tubingen_apg, test_qiimecustom, apollo, ipop_up, vsc_calcua, test_fasta, pdc_kth, ceci_nic5, ccga_cau, humantechnopole, stjude, daisybio, test_iontorrent, eddie, medair, biowulf, apptainer, bi, bigpurple, adcra, test_novaseq, cedars, pawsey_setonix, vsc_kul_uhasselt, pawsey_nimbus, rki, ucl_myriad, utd_ganymede, charliecloud, fred_hutch, test_multi, seattlechildrens, icr_davros, ceres, arm, munin, rosalind, hasta, cfc, uzh, test_multiregion, shu_bmrc, ebi_codon_slurm, ebc, ccga_dx, crick, ku_sund_danhead, marvin, lrz_cm4, shifter, biohpc_gen, mana, mamba, york_viking, unc_lccc, wehi, awsbatch, wustl_htcf, arcc, ceci_dragon2, imperial, maestro, software_license, cannon, genotoul, nci_gadi, abims, eva_grace, janelia, nu_genomics, googlebatch, oist, sahmri, kaust, test_reftaxcustom, alliance_canada, mpcdf, leicester, vsc_ugent, create, sage, cambridge, test_single, jex, podman, ebi_codon, cheaha, xanadu, nyu_hpc, test, marjorie, test_pplace, computerome, ucd_sonic, gpu, seg_globe, mssm, sanger, dkfz, bluebear, pasteur, einstein, ethz_euler, m3c, test_full, imb, ucl_cscluster, tuos_stanage, azurebatch, seadragon, crukmi, csiro_petrichor, qmul_apocrita, wave, docker, engaging, gis, hypatia, psmn, eva, unity, cropdiversityhpc, nygc, fgcz, conda, crg, singularity, mpcdf_viper, pe2, dirac, self_hosted_runner, tufts, uw_hyak_pedslabs, binac2, debug, hki_genie, genouest, cbe, unsw_katana, utd_juno, test_failed, gitpod, phoenix, seawulf, uod_hpc, fub_curta, lovelace, uct_hpc, aws_tower, binac, fsu_draco]
+Jan-08 18:47:03.707 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.4.2]
+Jan-08 18:47:03.707 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Jan-08 18:47:03.708 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.4.2]
+Jan-08 18:47:04.282 [main] DEBUG n.plugin.HttpPluginRepository - Registry request: https://registry.nextflow.io/api/v1/plugins/dependencies?plugins=nf-schema%402.4.2&nextflowVersion=25.10.2
+- code: 200
+- body: {"plugins":[{"id":"nf-schema","downloadCount":110169,"downloadGhCount":500945,"releases":[{"version":"2.4.2","url":"https://registry.nextflow.io/api/v1/plugins/nf-schema/2.4.2/download/nf-schema-2.4.2.zip","date":"2025-05-06T07:59:38.755933Z","sha512sum":"0a7f91b7abdfaa46a17c911a96f1d165bd2a29189bedef108c86e225fc1cb71dcddba83bb10db4db87701336eeaf04b3bd1cce930054f3e3e8eb5821f9ccb0d7","requires":">=24.10.0","dependsOn":[],"downloadCount":33027,"downloadGhCount":84383,"status":"PUBLISHED","spec":null,"description":null}],"projectUrl":"https://github.com/nextflow-io/nf-schema","provider":"nextflow-io","description":null}]}
+Jan-08 18:47:04.307 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.4.2
+Jan-08 18:47:04.321 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.4.2' resolved
+Jan-08 18:47:04.321 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.4.2'
+Jan-08 18:47:04.328 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.4.2
+Jan-08 18:47:04.332 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/katwre/.nextflow/secrets/store.json
+Jan-08 18:47:04.333 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@bd28c86] - activable => nextflow.secret.LocalSecretsProvider@bd28c86
+Jan-08 18:47:04.337 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Jan-08 18:47:04.337 [main] DEBUG nextflow.cli.CmdRun - Launching `https://github.com/nf-core/ampliseq` [deadly_carson] DSL2 - revision: d8dd15d5e7 [master]
+Jan-08 18:47:04.365 [main] DEBUG nextflow.Session - Session UUID: 2f83229b-9c3e-408f-b17a-bd8af10e814d
+Jan-08 18:47:04.366 [main] DEBUG nextflow.Session - Run name: deadly_carson
+Jan-08 18:47:04.366 [main] DEBUG nextflow.Session - Executor pool size: 8
+Jan-08 18:47:04.371 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Jan-08 18:47:04.373 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Jan-08 18:47:04.386 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 25.10.2 build 10555
+  Created: 28-11-2025 19:24 UTC (20:24 CEST)
+  System: Linux 6.14.0-37-generic
+  Runtime: Groovy 4.0.28 on OpenJDK 64-Bit Server VM 21.0.9+10-Ubuntu-124.04
+  Encoding: UTF-8 (UTF-8)
+  Process: 240942@katwre-XPS-13-9350 [127.0.1.1]
+  CPUs: 8 - Mem: 30.9 GB (8.5 GB) - Swap: 8 GB (8 GB)
+Jan-08 18:47:04.396 [main] DEBUG nextflow.Session - Work-dir: /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work [ext2/ext3]
+Jan-08 18:47:04.412 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Jan-08 18:47:04.418 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Jan-08 18:47:04.419 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
+Jan-08 18:47:04.429 [main] DEBUG nextflow.Session - Observer factory: ValidationObserverFactory
+Jan-08 18:47:04.460 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Jan-08 18:47:04.466 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Jan-08 18:47:04.509 [main] DEBUG nextflow.Session - Session start
+Jan-08 18:47:04.513 [main] DEBUG n.validation.config.ValidationConfig - Set `validation.monochromeLogs` to false
+Jan-08 18:47:04.514 [main] DEBUG n.validation.config.ValidationConfig - Added the following parameters to the ignored parameters: [genomes, igenomes_base, dada_ref_databases, qiime_ref_databases, sintax_ref_databases, kraken2_ref_databases, sidle_ref_databases]
+Jan-08 18:47:04.516 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.enabled` to true
+Jan-08 18:47:04.516 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHiddenParameter` to show_hidden
+Jan-08 18:47:04.516 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHidden` to false (Due to --show_hidden)
+Jan-08 18:47:04.516 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.fullParameter` to help_full
+Jan-08 18:47:04.520 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/ampliseq 2.15.0
+------------------------------------------------------
+
+Jan-08 18:47:04.520 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1493841
+    https://doi.org/10.3389/fmicb.2020.550420
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/ampliseq/blob/master/CITATIONS.md
+
+Jan-08 18:47:04.521 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.command` to nextflow run nf-core/ampliseq -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>
+Jan-08 18:47:04.523 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/ampliseq 2.15.0
+------------------------------------------------------
+
+Jan-08 18:47:04.523 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1493841
+    https://doi.org/10.3389/fmicb.2020.550420
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/ampliseq/blob/master/CITATIONS.md
+
+Jan-08 18:47:04.526 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: null/pipeline_info/execution_trace_2026-01-08_18-47-02.txt
+Jan-08 18:47:04.585 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Jan-08 18:47:07.439 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Jan-08 18:47:07.450 [main] DEBUG n.validation.config.ValidationConfig - Set `validation.monochromeLogs` to false
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.ValidationConfig - Added the following parameters to the ignored parameters: [genomes, igenomes_base, dada_ref_databases, qiime_ref_databases, sintax_ref_databases, kraken2_ref_databases, sidle_ref_databases]
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.enabled` to true
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHiddenParameter` to show_hidden
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHidden` to false (Due to --show_hidden)
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.fullParameter` to help_full
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/ampliseq 2.15.0
+------------------------------------------------------
+
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1493841
+    https://doi.org/10.3389/fmicb.2020.550420
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/ampliseq/blob/master/CITATIONS.md
+
+Jan-08 18:47:07.451 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.command` to nextflow run nf-core/ampliseq -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>
+Jan-08 18:47:07.452 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/ampliseq 2.15.0
+------------------------------------------------------
+
+Jan-08 18:47:07.452 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1493841
+    https://doi.org/10.3389/fmicb.2020.550420
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/ampliseq/blob/master/CITATIONS.md
+
+Jan-08 18:47:07.452 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Jan-08 18:47:07.453 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Jan-08 18:47:07.453 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Jan-08 18:47:08.170 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Jan-08 18:47:08.170 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Jan-08 18:47:08.289 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Jan-08 18:47:08.289 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Jan-08 18:47:08.290 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Jan-08 18:47:08.290 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Jan-08 18:47:08.382 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Jan-08 18:47:08.382 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Jan-08 18:47:08.383 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Jan-08 18:47:08.384 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Jan-08 18:47:08.469 [main] INFO  nextflow.Nextflow - 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/ampliseq 2.15.0
+------------------------------------------------------
+[1mMain arguments[0m
+  [0;34minput                     : [0;32mhttps://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Samplesheet.tsv[0m
+  [0;34mFW_primer                 : [0;32mGTGYCAGCMGCCGCGGTAA[0m
+  [0;34mRV_primer                 : [0;32mGGACTACNVGGGTWTCTAAT[0m
+  [0;34mmetadata                  : [0;32mhttps://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Metadata.tsv[0m
+
+[1mASV post processing[0m
+  [0;34mvsearch_cluster           : [0;32mtrue[0m
+  [0;34mfilter_ssu                : [0;32mbac[0m
+  [0;34mmax_len_asv               : [0;32m255[0m
+
+[1mTaxonomic assignment[0m
+  [0;34mdada_ref_taxonomy         : [0;32mgtdb=R07-RS207[0m
+  [0;34mcut_dada_ref_taxonomy     : [0;32mtrue[0m
+  [0;34mqiime_ref_taxonomy        : [0;32mgreengenes85[0m
+
+[1mASV filtering[0m
+  [0;34mmin_frequency             : [0;32m10[0m
+  [0;34mmin_samples               : [0;32m2[0m
+
+[1mDownstream analysis[0m
+  [0;34mmetadata_category_barplot : [0;32mtreatment1,badpairwise10[0m
+  [0;34mqiime_adonis_formula      : [0;32mtreatment1,mix8[0m
+  [0;34msbdiexport                : [0;32mtrue[0m
+  [0;34mtax_agglom_max            : [0;32m4[0m
+
+[1mDifferential abundance analysis[0m
+  [0;34mancombc                   : [0;32mtrue[0m
+  [0;34mancombc_formula           : [0;32mtreatment1[0m
+  [0;34mancombc_formula_reflvl    : [0;32mtreatment1::b[0m
+  [0;34mancombc_effect_size       : [0;32m2[0m
+  [0;34mancombc_significance      : [0;32m0.00001[0m
+
+[1mGeneric options[0m
+  [0;34mtrace_report_suffix       : [0;32m2026-01-08_18-47-02[0m
+
+[1mInstitutional config options[0m
+  [0;34mconfig_profile_name       : [0;32mTest profile[0m
+  [0;34mconfig_profile_description: [0;32mMinimal test dataset to check pipeline function[0m
+
+[1mCore Nextflow options[0m
+  [0;34mrevision                  : [0;32mmaster[0m
+  [0;34mrunName                   : [0;32mdeadly_carson[0m
+  [0;34mcontainerEngine           : [0;32mdocker[0m
+  [0;34mlaunchDir                 : [0;32m/home/katwre/projects/Microbiome-ai-dev/analysis_bioinf[0m
+  [0;34mworkDir                   : [0;32m/home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work[0m
+  [0;34mprojectDir                : [0;32m/home/katwre/.nextflow/assets/nf-core/ampliseq[0m
+  [0;34muserName                  : [0;32mkatwre[0m
+  [0;34mprofile                   : [0;32mtest,docker[0m
+  [0;34mconfigFiles               : [0;32m/home/katwre/.nextflow/assets/nf-core/ampliseq/nextflow.config[0m
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+-[2m----------------------------------------------------[0m-
+* The pipeline
+    https://doi.org/10.5281/zenodo.1493841
+    https://doi.org/10.3389/fmicb.2020.550420
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/ampliseq/blob/master/CITATIONS.md
+
+Jan-08 18:47:08.473 [main] DEBUG n.v.parameters.ParameterValidator - Starting parameters validation
+Jan-08 18:47:09.604 [main] DEBUG n.v.v.evaluators.SchemaEvaluator - Started validating /nf-core/test-datasets/ampliseq/samplesheets/Samplesheet.tsv
+Jan-08 18:47:10.160 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:10.398 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:10.594 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:10.778 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:11.196 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:11.522 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:11.728 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:11.934 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1a_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:12.341 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:12.751 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:12.936 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:13.118 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:13.520 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:13.846 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:14.030 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:14.213 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/1_S103_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:14.664 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:14.964 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:15.153 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:15.321 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:15.698 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:15.991 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:16.168 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:16.328 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2a_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:16.670 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:17.050 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:17.218 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:17.393 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R2_001.fastq.gz; attempt=0
+Jan-08 18:47:17.810 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:18.120 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:18.295 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:18.457 [main] DEBUG n.file.http.XFileSystemProvider - Remote redirect location=https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/testdata/2_S115_L001_R1_001.fastq.gz; attempt=0
+Jan-08 18:47:18.647 [main] DEBUG n.v.v.evaluators.SchemaEvaluator - Validation of file 'https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Samplesheet.tsv' passed!
+Jan-08 18:47:18.986 [main] WARN  n.v.parameters.ParameterValidator - The following invalid input values have been detected:
+
+* --mergepairs_consensus_minoverlap: 12
+* --metadata: https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Metadata.tsv
+* --min_samples: 2
+* --vsearch_cluster: true
+* --trunc_qmin: 25
+* --custom_config_base: https://raw.githubusercontent.com/nf-core/configs/master
+* --mergepairs_strategy: merge
+* --ancombc_significance: 0.00001
+* --stop_codons: TAA,TAG
+* --mergepairs_consensus_mismatch: -2
+* --sidle_ref_degenerates: 5
+* --mergepairs_consensus_match: 1
+* --cut_its: none
+* --tax_agglom_max: 4
+* --kraken2_confidence: 
+* --qiime_ref_taxonomy: greengenes85
+* --max_multiqc_email_size: 25.MB
+* --report_logo: /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/nf-core-ampliseq_logo_light_long.png
+* --dada_assign_chunksize: 10000
+* --validate_params: true
+* --trunc_rmin: 0.75
+* --min_read_counts: 1
+* --tax_agglom_min: 2
+* --cutadapt_max_error_rate: 0.1
+* --truncq: 2
+* --publish_dir_mode: copy
+* --input: https://raw.githubusercontent.com/nf-core/test-datasets/ampliseq/samplesheets/Samplesheet.tsv
+* --ancom_sample_min_count: 1
+* --dada_ref_taxonomy: gtdb=R07-RS207
+* --config_profile_name: Test profile
+* --trace_report_suffix: 2026-01-08_18-47-02
+* --mergepairs_consensus_gap: -4
+* --ancombc_effect_size: 2
+* --RV_primer: GGACTACNVGGGTWTCTAAT
+* --raise_filter_stacksize: true
+* --filter_ssu: bac
+* --extension: /*_R{1,2}_001.fastq.gz
+* --FW_primer: GTGYCAGCMGCCGCGGTAA
+* --seed: 100
+* --mergepairs_consensus_percentile_cutoff: 0.001
+* --quality_type: Auto
+* --min_len: 50
+* --vsearch_cluster_id: 0.97
+* --diversity_rarefaction_depth: 500
+* --pplace_alnmethod: hmmer
+* --metadata_category_barplot: treatment1,badpairwise10
+* --ancombc_formula_reflvl: treatment1::b
+* --custom_config_version: master
+* --min_frequency: 10
+* --orf_start: 1
+* --max_ee: 2
+* --ancombc_formula: treatment1
+* --mergepairs_consensus_maxmismatch: 
+* --report_css: /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/nf-core_style.css
+* --dada_min_boot: 50
+* --report_title: Summary of analysis results
+* --config_profile_description: Minimal test dataset to check pipeline function
+* --exclude_taxa: mitochondria,chloroplast
+* --qiime_adonis_formula: treatment1,mix8
+* --report_template: /home/katwre/.nextflow/assets/nf-core/ampliseq/assets/report_template.Rmd
+* --ancombc: true
+* --cut_dada_ref_taxonomy: true
+* --pipelines_testdata_base_path: https://raw.githubusercontent.com/nf-core/test-datasets/
+* --sample_inference: independent
+* --cutadapt_min_overlap: 3
+* --max_len_asv: 255
+* --its_partial: 
+* --sbdiexport: true
+
+
+Jan-08 18:47:18.991 [main] ERROR n.v.parameters.ParameterValidator - Validation of pipeline parameters failed!
+Jan-08 18:47:18.998 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_c96086c74855c3af: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_align.nf
+  Script_52f1b92a4451b1f3: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_export_relasv.nf
+  Script_76b36f12d5971a3c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_ancombc_asv.nf
+  Script_75fda744aeb80f29: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/metadata_pairwise.nf
+  Script_9e61b79b569950a4: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/fastqc/main.nf
+  Script_45d0b50213f076a1: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_filtersamples.nf
+  Script_c6eb01dd1dd06e43: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/parse_input.nf
+  Script_58decacc61f328e4: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/cutadapt_workflow.nf
+  Script_08a698d4550c2752: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/combine_table.nf
+  Script_12b46557ab44d6f5: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_dbfilt.nf
+  Script_7e99596b01982ea5: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/rename_raw_data_files.nf
+  Script_dd81938f05bcb80f: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/cutadapt_summary.nf
+  Script_7fa9ca3e17160195: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_inasv.nf
+  Script_e3f1c18ec1a5901a: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/cutadapt_summary_merge.nf
+  Script_2c1b2dc52963abcb: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/gappa/examineheattree/main.nf
+  Script_cf7d03c6fe833d02: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_pplacetax.nf
+  Script_93274c243ee31888: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_ancom_asv.nf
+  Script_da2b398316bed6c7: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_diversity_beta.nf
+  Script_a67f730979181f08: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/dada2_preprocessing.nf
+  Script_8cb0156bbbb19d41: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_dbrecon.nf
+  Script_f2ea2fb323f32280: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/sidle_wf.nf
+  Script_34254129a72d5686: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/filter_stats.nf
+  Script_0e8437fe6a2d28a8: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_diversity_core.nf
+  Script_16d79b0071ecdbae: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/picrust.nf
+  Script_7d6dde484d205a2d: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_taxonomy.nf
+  Script_ff881218dc6351ec: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/epang/place/main.nf
+  Script_4470c3c2c7687f63: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_barplotavg.nf
+  Script_9a3c100fb95ff114: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/vsearch/cluster/main.nf
+  Script_f692d4050e4b3338: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxresults.nf
+  Script_bbb20162317c55ea: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_taxonomy.nf
+  Script_4ef483a6a9583cc3: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/vsearch/usearchglobal/main.nf
+  Script_a8d8dd8dd41d074f: /home/katwre/.nextflow/assets/nf-core/ampliseq/main.nf
+  Script_995a7cb3ac639633: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/hmmer/eslalimask/main.nf
+  Script_37dd05118c905307: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/cutadapt/main.nf
+  Script_3f06e6c7c5e7198f: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/epang/split/main.nf
+  Script_255be8a723f36ffc: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_ancom.nf
+  Script_7720afc87cec4d4e: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/gappa/examineassign/main.nf
+  Script_6b378070b51e55c2: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_diversity_alpha.nf
+  Script_de3ac6007f988fe0: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_train.nf
+  Script_97e58c010087a7eb: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_fastainput.nf
+  Script_aaefd0c3e035dc7c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/phyloseq.nf
+  Script_25381b110996cf68: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_trim.nf
+  Script_de1a6238cf799b11: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_intree.nf
+  Script_402d5f5ab1445763: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/metadata_all.nf
+  Script_4d531acfbffc0765: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_splitregions.nf
+  Script_d48dce6213d84c76: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_addspecies.nf
+  Script_ff4297d4394bb5fc: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_taxrecon.nf
+  Script_14d4512eef0646ca: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxresults_sintax.nf
+  Script_1416415dc3f2e3ac: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_diversity_adonis.nf
+  Script_fa33eeb968f3a4de: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_export_absolute.nf
+  Script_bd93eb1c34b0787e: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/hmmer/hmmbuild/main.nf
+  Script_ffce025c597d6069: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_tree.nf
+  Script_dbf05e260fb76564: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_rmchimera.nf
+  Script_8a3b7dd393be03f2: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_merge.nf
+  Script_849f40204bbd56be: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/phyloseq_inasv.nf
+  Script_f80ca6936fd73be6: /home/katwre/.nextflow/assets/nf-core/ampliseq/workflows/ampliseq.nf
+  Script_a7fa783904a03f39: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/dada2_taxonomy_wf.nf
+  Script_582cf8cddc5faef4: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_filttax.nf
+  Script_bc88132e37d07029: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sbdiexportreannotate.nf
+  Script_25d992a9ae15a5ec: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxonomy_qiime.nf
+  Script_a1d984f21c1a81ff: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxonomy_sintax.nf
+  Script_ddfca8709ced902c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_featuretable_group.nf
+  Script_bc5db0212ed50f6d: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/summary_report.nf
+  Script_df54fe6a0a83a45d: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/hmmer/hmmalign/main.nf
+  Script_0e9978a7930c4261: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_seqrecon.nf
+  Script_6ee2ff9489370efb: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/itsx_cutasv.nf
+  Script_2a3123de5fac596c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/untar/main.nf
+  Script_e276ca4f2ade6948: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_stats.nf
+  Script_e0049c34fbe7e9ea: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_intax.nf
+  Script_ce136b267b048147: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/multiqc/main.nf
+  Script_171177632d2fc9d1: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_dbextract.nf
+  Script_891440a68088119a: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/vsearch/sintax/main.nf
+  Script_b5bf9d3c865df99b: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sbdiexport.nf
+  Script_7110255cdfb2c0c2: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/utils_nfcore_ampliseq_pipeline/main.nf
+  Script_9096d61b431cd735: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/robject_workflow.nf
+  Script_0f17d1326f2f2abb: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_alphararefaction.nf
+  Script_7a853f890a6db8a7: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_diversity_betaord.nf
+  Script_5c6abcd8529b5f0c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_indb.nf
+  Script_ca3ca0240149d305: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/barrnapsummary.nf
+  Script_f0e0b86555fced42: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_extract.nf
+  Script_5379148f9afa3d4f: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/sintax_taxonomy_wf.nf
+  Script_7fb1368edbc8c277: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_indbaligned.nf
+  Script_0e342fee802747c3: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/barrnap.nf
+  Script_2ba24d377a8d4812: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_tablerecon.nf
+  Script_1c181ef700790f2d: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/filter_ssu.nf
+  Script_d83456e57f0b81bd: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/filter_len.nf
+  Script_5bd456202f5e0b7e: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_seqfiltertable.nf
+  Script_18760d06accb30db: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_barplot.nf
+  Script_503dd0ed2be6e2bb: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_denoising.nf
+  Script_6888786c7ed5ff01: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxonomy_sidle.nf
+  Script_61b0efa60752deef: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_in.nf
+  Script_215a636da7ab24a2: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/nf-core/utils_nfschema_plugin/main.nf
+  Script_7780b14094823a21: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/hmmer/eslreformat/main.nf
+  Script_149c8f1a0a39b8b6: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/kraken2/kraken2/main.nf
+  Script_f1b925f327ca7ea4: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/filter_clusters.nf
+  Script_e7aea716964b5096: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_export.nf
+  Script_c706c77057e44c24: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/filter_codons.nf
+  Script_5c4e8d4051efa81e: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/nf-core/utils_nfcore_pipeline/main.nf
+  Script_57abb468e6a1ce47: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/merge_stats.nf
+  Script_a5b8fc3ca10c5b3f: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_filtntrim.nf
+  Script_c385d5b426b4a4d8: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/sidle_treerecon.nf
+  Script_006e4bdaeaccc2ff: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/treesummarizedexperiment.nf
+  Script_d906a2cb867fb2bc: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/trunclen.nf
+  Script_b99976e6680125ee: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_export_reltax.nf
+  Script_97d9cbe297b6064d: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/kraken2_taxonomy_wf.nf
+  Script_88c9ad4733da0639: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_diversity.nf
+  Script_26561003d0061762: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/gappa/examinegraft/main.nf
+  Script_c93ff7db7fe34487: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxonomy.nf
+  Script_121bbc69abad501f: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/phyloseq_intax.nf
+  Script_4f612cfd8c52e8cd: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/nf-core/utils_nextflow_pipeline/main.nf
+  Script_41a92f793bdd582c: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_ancombc_tax.nf
+  Script_903404177d98a206: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/format_taxresults_kraken2.nf
+  Script_64854158e10f881b: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_ancom_tax.nf
+  Script_8fe478f54e9c597b: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/nf-core/fasta_newick_epang_gappa/main.nf
+  Script_810a971f4dfff0ad: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/pigz/uncompress/main.nf
+  Script_c45925c156453f92: /home/katwre/.nextflow/assets/nf-core/ampliseq/subworkflows/local/qiime2_preptax.nf
+  Script_a02a66cc5387926b: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/novaseq_err.nf
+  Script_956de67b87b5bbc5: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_err.nf
+  Script_d5743d9f9c91f4e1: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/assignsh.nf
+  Script_9eb5caab03949237: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_classify.nf
+  Script_8c540bc1e807fa3b: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/dada2_quality.nf
+  Script_b7acbd417602eae4: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/nf-core/mafft/main.nf
+  Script_d409d6d569da350d: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_inseq.nf
+  Script_738fcbd94fc275fe: /home/katwre/.nextflow/assets/nf-core/ampliseq/modules/local/qiime2_tablefiltertaxa.nf
+Jan-08 18:47:18.998 [main] DEBUG nextflow.Session - Session aborted -- Cause: [0;31mThe following invalid input values have been detected:
+
+* Missing required parameter(s): outdir
+[0m
+
+Jan-08 18:47:19.012 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=0; peakCpus=0; peakMemory=0; ]
+Jan-08 18:47:19.162 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Jan-08 18:47:19.552 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Jan-08 18:47:19.590 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+Jan-08 18:47:19.594 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.validation.exceptions.SchemaValidationException: [0;31mThe following invalid input values have been detected:
+
+* Missing required parameter(s): outdir
+[0m
+
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.validation.parameters.ParameterValidator.validateParametersMap(ParameterValidator.groovy:179)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.validation.ValidationExtension.validateParameters(ValidationExtension.groovy:106)
+	at nextflow.validation.ValidationExtension.validateParameters(ValidationExtension.groovy)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at nextflow.script.FunctionDef.invoke_a(FunctionDef.groovy:64)
+	at nextflow.script.ComponentDef.invoke_o(ComponentDef.groovy:40)
+	at nextflow.script.WorkflowBinding.invokeMethod(WorkflowBinding.groovy:105)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:651)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeOnDelegationObjects(ClosureMetaClass.java:392)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:331)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_215a636da7ab24a2$_runScript_closure1$_closure2.doCall(Script_215a636da7ab24a2:39)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at nextflow.script.ComponentDef.invoke_o(ComponentDef.groovy:40)
+	at nextflow.script.WorkflowBinding.invokeMethod(WorkflowBinding.groovy:105)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:651)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeOnDelegationObjects(ClosureMetaClass.java:392)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:331)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_7110255cdfb2c0c2$_runScript_closure7$_closure9.doCall(Script_7110255cdfb2c0c2:52)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at nextflow.script.ComponentDef.invoke_o(ComponentDef.groovy:40)
+	at nextflow.script.WorkflowBinding.invokeMethod(WorkflowBinding.groovy:105)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:651)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeOnDelegationObjects(ClosureMetaClass.java:392)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:331)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at Script_a8d8dd8dd41d074f$_runScript_closure2$_closure4.doCall(Script_a8d8dd8dd41d074f:55)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at org.codehaus.groovy.runtime.metaclass.ClosureMetaClass.invokeMethod(ClosureMetaClass.java:280)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+	at groovy.lang.Closure.call(Closure.java:433)
+	at groovy.lang.Closure.call(Closure.java:412)
+	at nextflow.script.WorkflowDef.run0(WorkflowDef.groovy:205)
+	at nextflow.script.WorkflowDef.run(WorkflowDef.groovy:189)
+	at nextflow.script.BindableDef.invoke_a(BindableDef.groovy:51)
+	at nextflow.script.BaseScript.run0(BaseScript.groovy:249)
+	at nextflow.script.BaseScript.run(BaseScript.groovy:260)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy:246)
+	at nextflow.script.parser.v1.ScriptLoaderV1.runScript(ScriptLoaderV1.groovy)
+	at nextflow.script.ScriptRunner.run(ScriptRunner.groovy:246)
+	at nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:139)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:429)
+	at nextflow.cli.Launcher.run(Launcher.groovy:515)
+	at nextflow.cli.Launcher.main(Launcher.groovy:675)

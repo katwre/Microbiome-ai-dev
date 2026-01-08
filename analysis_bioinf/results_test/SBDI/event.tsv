@@ -1,0 +1,5 @@
+eventID	datasetID	institutionCode	institutionID	collectionCode	materialSampleID	associatedSequences	fieldNumber	catalogNumber	references	eventDate	samplingProtocol	locationID	decimalLatitude	decimalLongitude	geodeticDatum	coordinateUncertaintyInMeters	recordedBy	country	municipality	verbatimLocality	minimumElevationInMeters	maximumElevationInMeters	minimumDepthInMeters	maximumDepthInMeters
+sampleID_1	""	""	""	""	https://www.ebi.ac.uk/ena/browser/view/ERS3508481	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""
+sampleID_1a	""	""	""	""	https://www.ebi.ac.uk/ena/browser/view/ERS3508483	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""
+sampleID_2	""	""	""	""	https://www.ebi.ac.uk/ena/browser/view/ERS3508482	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""
+sampleID_2a	""	""	""	""	https://www.ebi.ac.uk/ena/browser/view/ERS3508484	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""	""

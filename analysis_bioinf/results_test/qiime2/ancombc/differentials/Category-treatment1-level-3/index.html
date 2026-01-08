@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>q2_composition : tabulate</title>
+    <link rel="stylesheet" href="./q2templateassets/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./q2templateassets/css/normalize.css"/>
+    <link rel="stylesheet" href="./q2templateassets/css/base-template.css"/>
+    <script src="./q2templateassets/js/jquery-3.2.0.min.js" charset="utf-8"></script>
+    <script src="./q2templateassets/js/bootstrap.min.js" charset="utf-8"></script>
+    
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 10px;
+      background: #f2f2f2;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 700px;
+      background: #efefef;
+      box-shadow: 0 48px 80px -32px rgba(0,0,0,0.3);
+    }
+
+    .input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .label {
+      width: 100%;
+      padding: 20px 30px;
+      background: #e5e5e5;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      color: #7f7f7f;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .label:hover {
+      background: #d8d8d8;
+    }
+
+    .label:active {
+      background: #ccc;
+    }
+
+    .input:focus + .label {
+      box-shadow: inset 0px 0px 0px 3px #2aa1c0;
+      z-index: 1;
+    }
+
+    .input:checked + .label {
+      background: #fff;
+      color: #000;
+    }
+
+    @media (min-width: 600px) {
+      .label {
+        width: auto;
+      }
+    }
+
+    .panel {
+      display: none;
+      padding: 20px 30px 30px;
+      background: #fff;
+    }
+
+    @media (min-width: 600px) {
+      .panel {
+        order: 99;
+      }
+    }
+
+    .input:checked + .label + .panel {
+      display: block;
+    }
+  </style>
+
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div id="q2templatesheader" class="row">
+        <div class="col-lg-12">
+          <a href="http://qiime2.org/">
+            <img src="./q2templateassets/img/qiime2-rect-200.png"
+            alt="QIIME 2">
+          </a>
+        </div>
+      </div>
+        
+  <div class="tabs">
+    
+    
+      
+        <input name="tabs" type="radio" id="lfc" checked="checked" class="input"/>
+      
+      
+      <label for="lfc" class="label">lfc</label>
+      <div class="panel">
+      
+        <h1>Log-Fold Change (LFC)</h1>
+          <p>Positive numbers indicate enrichment relative to the intercept,
+          negative numbers indicate depletion relative to the intercept.</p><br>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>treatment1::a (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>treatment1b</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bacteria;;</th>
+      <td>1.772239</td>
+      <td>-1.301518</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Koll11</th>
+      <td>0.416882</td>
+      <td>3.077356</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Acidobacteriota;Mor1</th>
+      <td>-0.464912</td>
+      <td>-0.037322</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Proteobacteria;Gammaproteobacteria</th>
+      <td>2.031889</td>
+      <td>3.986846</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Bacteroidota;Bacteroidia</th>
+      <td>-2.714817</td>
+      <td>4.427991</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Nitrospiria</th>
+      <td>-0.923057</td>
+      <td>3.730860</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Methylomirabilota;Methylomirabilia</th>
+      <td>0.346429</td>
+      <td>-0.848664</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Gemmatimonadota;Gemmatimonadetes</th>
+      <td>-2.714817</td>
+      <td>3.990257</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;ABY1</th>
+      <td>0.894638</td>
+      <td>-1.396872</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota;GWC2-55-46</th>
+      <td>-0.576484</td>
+      <td>0.074249</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Omnitrophia</th>
+      <td>0.580334</td>
+      <td>-1.082568</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota_E;MBNT15</th>
+      <td>-0.262180</td>
+      <td>-0.240055</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Paceibacteria</th>
+      <td>1.029050</td>
+      <td>-1.531284</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Thermodesulfovibrionia</th>
+      <td>2.141982</td>
+      <td>-1.492924</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Gracilibacteria</th>
+      <td>1.031285</td>
+      <td>-1.533519</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;</th>
+      <td>-0.177230</td>
+      <td>-0.325004</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Firmicutes;Bacilli</th>
+      <td>-2.714817</td>
+      <td>5.325851</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Margulisbacteria;WOR-1</th>
+      <td>0.455363</td>
+      <td>-0.957597</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="p_val" class="input"/>
+      
+      
+      <label for="p_val" class="label">p_val</label>
+      <div class="panel">
+      
+        <h1><i>p</i>-Values</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>treatment1::a (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>treatment1b</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bacteria;;</th>
+      <td>3.547047e-100</td>
+      <td>9.695818e-02</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Koll11</th>
+      <td>7.513824e-05</td>
+      <td>5.014486e-24</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Acidobacteriota;Mor1</th>
+      <td>3.045796e-01</td>
+      <td>9.390588e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Proteobacteria;Gammaproteobacteria</th>
+      <td>9.179331e-20</td>
+      <td>6.786052e-54</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Bacteroidota;Bacteroidia</th>
+      <td>0.000000e+00</td>
+      <td>4.061481e-44</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Nitrospiria</th>
+      <td>2.834614e-99</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Methylomirabilota;Methylomirabilia</th>
+      <td>6.066145e-03</td>
+      <td>3.521699e-07</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Gemmatimonadota;Gemmatimonadetes</th>
+      <td>0.000000e+00</td>
+      <td>1.427313e-77</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;ABY1</th>
+      <td>3.537842e-121</td>
+      <td>4.534625e-47</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota;GWC2-55-46</th>
+      <td>1.387416e-11</td>
+      <td>5.663993e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Omnitrophia</th>
+      <td>9.681690e-17</td>
+      <td>1.852206e-20</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota_E;MBNT15</th>
+      <td>2.423477e-01</td>
+      <td>3.585475e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Paceibacteria</th>
+      <td>1.011762e-42</td>
+      <td>1.021595e-36</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Thermodesulfovibrionia</th>
+      <td>0.000000e+00</td>
+      <td>7.280417e-02</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Gracilibacteria</th>
+      <td>5.786003e-70</td>
+      <td>1.436119e-45</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;</th>
+      <td>3.982855e-01</td>
+      <td>1.887639e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Firmicutes;Bacilli</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Margulisbacteria;WOR-1</th>
+      <td>2.940723e-07</td>
+      <td>5.015644e-13</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="q_val" class="input"/>
+      
+      
+      <label for="q_val" class="label">q_val</label>
+      <div class="panel">
+      
+        <h1><i>q</i>-Values: FDR Corrected <i>p</i>-Values</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>treatment1::a (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>treatment1b</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bacteria;;</th>
+      <td>4.611161e-99</td>
+      <td>4.847909e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Koll11</th>
+      <td>3.756912e-04</td>
+      <td>5.014486e-23</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Acidobacteriota;Mor1</th>
+      <td>7.270430e-01</td>
+      <td>1.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Proteobacteria;Gammaproteobacteria</th>
+      <td>8.261398e-19</td>
+      <td>1.017908e-52</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Bacteroidota;Bacteroidia</th>
+      <td>0.000000e+00</td>
+      <td>4.873777e-43</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Nitrospiria</th>
+      <td>3.401537e-98</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Methylomirabilota;Methylomirabilia</th>
+      <td>2.426458e-02</td>
+      <td>2.465189e-06</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Gemmatimonadota;Gemmatimonadetes</th>
+      <td>0.000000e+00</td>
+      <td>2.283700e-76</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;ABY1</th>
+      <td>4.952979e-120</td>
+      <td>6.348475e-46</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota;GWC2-55-46</th>
+      <td>9.711915e-11</td>
+      <td>1.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Omnitrophia</th>
+      <td>7.745352e-16</td>
+      <td>1.666985e-19</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota_E;MBNT15</th>
+      <td>7.270430e-01</td>
+      <td>1.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Paceibacteria</th>
+      <td>1.011762e-41</td>
+      <td>1.123754e-35</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Thermodesulfovibrionia</th>
+      <td>0.000000e+00</td>
+      <td>4.368250e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Gracilibacteria</th>
+      <td>6.364603e-69</td>
+      <td>1.866954e-44</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;</th>
+      <td>7.270430e-01</td>
+      <td>7.550556e-01</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Firmicutes;Bacilli</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Margulisbacteria;WOR-1</th>
+      <td>1.764434e-06</td>
+      <td>4.012515e-12</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="se" class="input"/>
+      
+      
+      <label for="se" class="label">se</label>
+      <div class="panel">
+      
+        <h1>Standard Error</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>treatment1::a (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>treatment1b</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bacteria;;</th>
+      <td>0.083413</td>
+      <td>0.784150</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Koll11</th>
+      <td>0.105289</td>
+      <td>0.304403</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Acidobacteriota;Mor1</th>
+      <td>0.452838</td>
+      <td>0.488174</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Proteobacteria;Gammaproteobacteria</th>
+      <td>0.223327</td>
+      <td>0.257934</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Bacteroidota;Bacteroidia</th>
+      <td>0.043646</td>
+      <td>0.317834</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Nitrospiria</th>
+      <td>0.043646</td>
+      <td>0.089692</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Methylomirabilota;Methylomirabilia</th>
+      <td>0.126241</td>
+      <td>0.166629</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Gemmatimonadota;Gemmatimonadetes</th>
+      <td>0.043646</td>
+      <td>0.214030</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;ABY1</th>
+      <td>0.038219</td>
+      <td>0.096944</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota;GWC2-55-46</th>
+      <td>0.085289</td>
+      <td>0.129498</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Omnitrophia</th>
+      <td>0.069847</td>
+      <td>0.116775</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota_E;MBNT15</th>
+      <td>0.224250</td>
+      <td>0.261459</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Paceibacteria</th>
+      <td>0.075112</td>
+      <td>0.120982</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Thermodesulfovibrionia</th>
+      <td>0.054885</td>
+      <td>0.832150</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Gracilibacteria</th>
+      <td>0.058324</td>
+      <td>0.108235</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;</th>
+      <td>0.209817</td>
+      <td>0.247294</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Firmicutes;Bacilli</th>
+      <td>0.043646</td>
+      <td>0.113537</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Margulisbacteria;WOR-1</th>
+      <td>0.088813</td>
+      <td>0.132542</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="w" class="input"/>
+      
+      
+      <label for="w" class="label">w</label>
+      <div class="panel">
+      
+        <h1><i>W</i>-Scores: Log-Fold Change divided by the Standard Error</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>treatment1::a (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>treatment1b</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Bacteria;;</th>
+      <td>21.246562</td>
+      <td>-1.659783</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Koll11</th>
+      <td>3.959400</td>
+      <td>10.109490</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Acidobacteriota;Mor1</th>
+      <td>-1.026662</td>
+      <td>-0.076453</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Proteobacteria;Gammaproteobacteria</th>
+      <td>9.098257</td>
+      <td>15.456826</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Bacteroidota;Bacteroidia</th>
+      <td>-62.200823</td>
+      <td>13.931773</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Nitrospiria</th>
+      <td>-21.148732</td>
+      <td>41.596167</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Methylomirabilota;Methylomirabilia</th>
+      <td>2.744184</td>
+      <td>-5.093146</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Gemmatimonadota;Gemmatimonadetes</th>
+      <td>-62.200823</td>
+      <td>18.643450</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;ABY1</th>
+      <td>23.408058</td>
+      <td>-14.409118</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota;GWC2-55-46</th>
+      <td>-6.759215</td>
+      <td>0.573362</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Omnitrophota;Omnitrophia</th>
+      <td>8.308626</td>
+      <td>-9.270532</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Desulfobacterota_E;MBNT15</th>
+      <td>-1.169139</td>
+      <td>-0.918136</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Paceibacteria</th>
+      <td>13.700249</td>
+      <td>-12.657135</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Nitrospirota;Thermodesulfovibrionia</th>
+      <td>39.026992</td>
+      <td>-1.794056</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;Gracilibacteria</th>
+      <td>17.681856</td>
+      <td>-14.168462</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Patescibacteria;</th>
+      <td>-0.844687</td>
+      <td>-1.314245</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Firmicutes;Bacilli</th>
+      <td>-62.200823</td>
+      <td>46.908317</td>
+    </tr>
+    <tr>
+      <th>Bacteria;Margulisbacteria;WOR-1</th>
+      <td>5.127207</td>
+      <td>-7.224875</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+  </div>
+
+    </div>
+    <script type="text/javascript">
+      if (window.frameElement) {
+          document.getElementById('q2templatesheader').remove();
+      }
+    </script>
+    
+    
+  </body>
+</html>

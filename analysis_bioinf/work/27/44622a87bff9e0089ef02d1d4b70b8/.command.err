@@ -1,0 +1,19 @@
+Unable to find image 'quay.io/biocontainers/cutadapt:4.6--py39hf95cd2a_1' locally
+4.6--py39hf95cd2a_1: Pulling from biocontainers/cutadapt
+ca7680d1025d: Pulling fs layer
+bd9ddc54bea9: Pulling fs layer
+c73dc34703f5: Pulling fs layer
+c73dc34703f5: Waiting
+bd9ddc54bea9: Waiting
+ca7680d1025d: Waiting
+bd9ddc54bea9: Verifying Checksum
+bd9ddc54bea9: Download complete
+ca7680d1025d: Verifying Checksum
+ca7680d1025d: Download complete
+ca7680d1025d: Pull complete
+bd9ddc54bea9: Pull complete
+c73dc34703f5: Verifying Checksum
+c73dc34703f5: Download complete
+c73dc34703f5: Pull complete
+Digest: sha256:f03eb30fa9fc998da2b5117e449ebad37e48b8cead4a10739d45139390ff2a02
+Status: Downloaded newer image for quay.io/biocontainers/cutadapt:4.6--py39hf95cd2a_1

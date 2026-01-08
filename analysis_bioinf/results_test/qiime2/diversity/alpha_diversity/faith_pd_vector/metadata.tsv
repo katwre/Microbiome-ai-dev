@@ -1,0 +1,6 @@
+id	treatment1	mix8	badpairwise10	faith_pd
+#q2:types	categorical	categorical	categorical	numeric
+sampleID_1	b	2		1.79083330404824
+sampleID_2	b	2	2	1.92500792664355
+sampleID_1a	a	a	2	4.63027051498062
+sampleID_2a	a	a	a	4.69204289686746

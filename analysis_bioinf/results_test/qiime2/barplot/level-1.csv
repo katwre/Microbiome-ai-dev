@@ -1,0 +1,5 @@
+index,Bacteria,treatment1,bad3,bad4,bad5,num6,num7,mix8,bad9,badpairwise10,materialSampleID,target_gene
+sampleID_1,724.0,b,a,a,,1.0,,2,a,,ERS3508481,SSU rRNA
+sampleID_1a,543.0,a,a,,,3.0,,a,c,2,ERS3508483,SSU rRNA
+sampleID_2,891.0,b,a,,,2.0,1.0,2,b,2,ERS3508482,SSU rRNA
+sampleID_2a,642.0,a,a,a,,1.0,,a,d,a,ERS3508484,SSU rRNA

@@ -1,0 +1,17 @@
+nextflow.trace/v2
+realtime=8792
+%cpu=1102
+cpu_model=Intel(R) Core(TM) Ultra 7 258V
+rchar=89446128
+wchar=1591279
+syscr=15996
+syscw=349
+read_bytes=28672
+write_bytes=1986560
+%mem=13
+vmem=1740916
+rss=409524
+peak_vmem=1740916
+peak_rss=409524
+vol_ctxt=34
+inv_ctxt=285

@@ -1,0 +1,10 @@
+Unable to find image 'quay.io/biocontainers/bioconductor-dada2:1.22.0--r41h399db7b_0' locally
+1.22.0--r41h399db7b_0: Pulling from biocontainers/bioconductor-dada2
+c1a16a04cedd: Already exists
+4ca545ee6d5d: Already exists
+3fddfe9355b3: Pulling fs layer
+3fddfe9355b3: Verifying Checksum
+3fddfe9355b3: Download complete
+3fddfe9355b3: Pull complete
+Digest: sha256:998b707fb2b19e482b6fdae45c2375b032f9e597432e489de178c9e343f1f0a0
+Status: Downloaded newer image for quay.io/biocontainers/bioconductor-dada2:1.22.0--r41h399db7b_0

@@ -1,0 +1,667 @@
+#!/bin/bash
+### ---
+### name: 'NFCORE_AMPLISEQ:AMPLISEQ:FILTER_CLUSTERS (ASV_post_clustering)'
+### container: 'quay.io/biocontainers/pandas:1.1.5'
+### outputs:
+### - 'ASV_post_clustering_filtered.table.tsv'
+### - 'ASV_post_clustering_filtered.fna'
+### - 'ASV_post_clustering_filtered.stats.tsv'
+### - 'versions.yml'
+### ...
+set -e
+set -u
+NXF_DEBUG=${NXF_DEBUG:=0}; [[ $NXF_DEBUG > 1 ]] && set -x
+NXF_ENTRY=${1:-nxf_main}
+
+nxf_tree() {
+    local pid=$1
+
+    declare -a ALL_CHILDREN
+    while read P PP;do
+        ALL_CHILDREN[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    pstat() {
+        local x_pid=$1
+        local STATUS=$(2> /dev/null < /proc/$1/status grep -E 'Vm|ctxt')
+
+        if [ $? = 0 ]; then
+        local  x_vsz=$(echo "$STATUS" | grep VmSize | awk '{print $2}' || echo -n '0')
+        local  x_rss=$(echo "$STATUS" | grep VmRSS | awk '{print $2}' || echo -n '0')
+        local x_peak=$(echo "$STATUS" | grep -E 'VmPeak|VmHWM' | sed 's/^.*:\s*//' | sed 's/[\sa-zA-Z]*$//' | tr '\n' ' ' || echo -n '0 0')
+        local x_pmem=$(awk -v rss=$x_rss -v mem_tot=$mem_tot 'BEGIN {printf "%.0f", rss/mem_tot*100*10}' || echo -n '0')
+        local vol_ctxt=$(echo "$STATUS" | grep '\bvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        local inv_ctxt=$(echo "$STATUS" | grep '\bnonvoluntary_ctxt_switches' | awk '{print $2}' || echo -n '0')
+        cpu_stat[x_pid]="$x_pid $x_pmem $x_vsz $x_rss $x_peak $vol_ctxt $inv_ctxt"
+        fi
+    }
+
+    pwalk() {
+        pstat $1
+        for i in ${ALL_CHILDREN[$1]:=}; do pwalk $i; done
+    }
+
+    pwalk $1
+}
+
+nxf_stat() {
+    cpu_stat=()
+    nxf_tree $1
+
+    declare -a sum=(0 0 0 0 0 0 0 0)
+    local pid
+    local i
+    for pid in "${!cpu_stat[@]}"; do
+        local row=(${cpu_stat[pid]})
+        [ $NXF_DEBUG = 1 ] && echo "++ stat mem=${row[*]}"
+        for i in "${!row[@]}"; do
+        if [ $i != 0 ]; then
+            sum[i]=$((sum[i]+row[i]))
+        fi
+        done
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat SUM=${sum[*]}"
+
+    for i in {1..7}; do
+        if [ ${sum[i]} -lt ${cpu_peak[i]} ]; then
+            sum[i]=${cpu_peak[i]}
+        else
+            cpu_peak[i]=${sum[i]}
+        fi
+    done
+
+    [ $NXF_DEBUG = 1 ] && echo -e "++ stat PEAK=${sum[*]}\n"
+    nxf_stat_ret=(${sum[*]})
+}
+
+nxf_mem_watch() {
+    set -o pipefail
+    local pid=$1
+    local trace_file=.command.trace
+    local count=0;
+    declare -a cpu_stat=(0 0 0 0 0 0 0 0)
+    declare -a cpu_peak=(0 0 0 0 0 0 0 0)
+    local mem_tot=$(< /proc/meminfo grep MemTotal | awk '{print $2}')
+    local timeout
+    local DONE
+    local STOP=''
+
+    [ $NXF_DEBUG = 1 ] && nxf_sleep 0.2 && ps fx
+
+    while true; do
+        nxf_stat $pid
+        if [ $count -lt 10 ]; then timeout=1;
+        elif [ $count -lt 120 ]; then timeout=5;
+        else timeout=30;
+        fi
+        read -t $timeout -r DONE || true
+        [[ $DONE ]] && break
+        if [ ! -e /proc/$pid ]; then
+            [ ! $STOP ] && STOP=$(nxf_date)
+            [ $(($(nxf_date)-STOP)) -gt 10000 ] && break
+        fi
+        count=$((count+1))
+    done
+
+    printf "%s\n" \
+        "%mem=${nxf_stat_ret[1]}" \
+        "vmem=${nxf_stat_ret[2]}" \
+        "rss=${nxf_stat_ret[3]}" \
+        "peak_vmem=${nxf_stat_ret[4]}" \
+        "peak_rss=${nxf_stat_ret[5]}" \
+        "vol_ctxt=${nxf_stat_ret[6]}" \
+        "inv_ctxt=${nxf_stat_ret[7]}" >> "$trace_file" || >&2 echo "Error: Failed to append to file: $trace_file"
+}
+
+nxf_write_trace() {
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+}
+
+nxf_trace_mac() {
+    local start_millis=$(nxf_date)
+
+    /usr/bin/env bash -C -e -u -o pipefail /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/.command.sh
+
+    local end_millis=$(nxf_date)
+    local wall_time=$((end_millis-start_millis))
+    local ucpu=''
+    local cpu_model=''
+    local io_stat1=('' '' '' '' '' '')
+    nxf_write_trace
+}
+
+nxf_fd() {
+    local FD=11
+    while [ -e /proc/$$/fd/$FD ]; do FD=$((FD+1)); done
+    echo $FD
+}
+
+nxf_trace_linux() {
+    local pid=$$
+    command -v ps &>/dev/null || { >&2 echo "Command 'ps' required by nextflow to collect task metrics cannot be found"; exit 1; }
+    local num_cpus=$(< /proc/cpuinfo grep '^processor' -c)
+    local cpu_model=$(< /proc/cpuinfo grep '^model name' | head -n 1 | awk 'BEGIN{FS="\t: "} { print $2 }')
+    local tot_time0=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time0=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local io_stat0=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local start_millis=$(nxf_date)
+    trap 'kill $mem_proc' ERR
+    
+    /usr/bin/env bash -C -e -u -o pipefail /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/.command.sh &
+    local task=$!
+
+    mem_fd=$(nxf_fd)
+    eval "exec $mem_fd> >(nxf_mem_watch $task)"
+    local mem_proc=$!
+
+    wait $task
+
+    local end_millis=$(nxf_date)
+    local tot_time1=$(grep '^cpu ' /proc/stat | awk '{sum=$2+$3+$4+$5+$6+$7+$8+$9; printf "%.0f",sum}')
+    local cpu_time1=$(2> /dev/null < /proc/$pid/stat awk '{printf "%.0f", ($16+$17)*10 }' || echo -n 'X')
+    local ucpu=$(awk -v p1=$cpu_time1 -v p0=$cpu_time0 -v t1=$tot_time1 -v t0=$tot_time0 -v n=$num_cpus 'BEGIN { pct=(p1-p0)/(t1-t0)*100*n; printf("%.0f", pct>0 ? pct : 0) }' )
+
+    local io_stat1=($(2> /dev/null < /proc/$pid/io sed 's/^.*:\s*//' | head -n 6 | tr '\n' ' ' || echo -n '0 0 0 0 0 0'))
+    local i
+    for i in {0..5}; do
+        io_stat1[i]=$((io_stat1[i]-io_stat0[i]))
+    done
+
+    local wall_time=$((end_millis-start_millis))
+    [ $NXF_DEBUG = 1 ] && echo "+++ STATS %CPU=$ucpu TIME=$wall_time I/O=${io_stat1[*]}"
+
+    printf "%s\n" \
+        "nextflow.trace/v2" \
+        "realtime=$wall_time" \
+        "%cpu=$ucpu" \
+        "cpu_model=$cpu_model" \
+        "rchar=${io_stat1[0]}" \
+        "wchar=${io_stat1[1]}" \
+        "syscr=${io_stat1[2]}" \
+        "syscw=${io_stat1[3]}" \
+        "read_bytes=${io_stat1[4]}" \
+        "write_bytes=${io_stat1[5]}" >| "$trace_file" || >&2 echo "Error: Failed to write to file: $trace_file"
+
+    [ -e /proc/$mem_proc ] && eval "echo 'DONE' >&$mem_fd" || true
+    wait $mem_proc 2>/dev/null || true
+    while [ -e /proc/$mem_proc ]; do nxf_sleep 0.1; done
+}
+
+nxf_trace() {
+    local trace_file=.command.trace
+    touch $trace_file
+    if [[ $(uname) = Darwin ]]; then
+        nxf_trace_mac
+    else
+        nxf_trace_linux
+    fi
+}
+nxf_container_env() {
+cat << EOF
+export PYTHONNOUSERSITE="1"
+export R_PROFILE_USER="/.Rprofile"
+export R_ENVIRON_USER="/.Renviron"
+export JULIA_DEPOT_PATH="/usr/local/share/julia"
+export PATH="\$PATH:/home/katwre/.nextflow/assets/nf-core/ampliseq/bin"
+EOF
+}
+
+nxf_sleep() {
+  sleep $1 2>/dev/null || sleep 1;
+}
+
+nxf_date() {
+    local ts=$(date +%s%3N);
+    if [[ ${#ts} == 10 ]]; then echo ${ts}000
+    elif [[ $ts == *%3N ]]; then echo ${ts/\%3N/000}
+    elif [[ $ts == *3N ]]; then echo ${ts/3N/000}
+    elif [[ ${#ts} == 13 ]]; then echo $ts
+    else echo "Unexpected timestamp value: $ts"; exit 1
+    fi
+}
+
+nxf_env() {
+    echo '============= task environment ============='
+    env | sort | sed "s/\(.*\)AWS\(.*\)=\(.\{6\}\).*/\1AWS\2=\3xxxxxxxxxxxxx/"
+    echo '============= task output =================='
+}
+
+nxf_kill() {
+    declare -a children
+    while read P PP;do
+        children[$PP]+=" $P"
+    done < <(ps -e -o pid= -o ppid=)
+
+    kill_all() {
+        [[ $1 != $$ ]] && kill $1 2>/dev/null || true
+        for i in ${children[$1]:=}; do kill_all $i; done
+    }
+
+    kill_all $1
+}
+
+nxf_mktemp() {
+    local base=${1:-/tmp}
+    mkdir -p "$base"
+    if [[ $(uname) = Darwin ]]; then mktemp -d $base/nxf.XXXXXXXXXX
+    else TMPDIR="$base" mktemp -d -t nxf.XXXXXXXXXX
+    fi
+}
+
+nxf_fs_copy() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  cp -fRL $source $target/$basedir
+}
+
+nxf_fs_move() {
+  local source=$1
+  local target=$2
+  local basedir=$(dirname $1)
+  mkdir -p $target/$basedir
+  mv -f $source $target/$basedir
+}
+
+nxf_fs_rsync() {
+  rsync -rRl $1 $2
+}
+
+nxf_fs_rclone() {
+  rclone copyto $1 $2/$1
+}
+
+nxf_fs_fcp() {
+  fcp $1 $2/$1
+}
+
+on_exit() {
+    local last_err=$?
+    local exit_status=${nxf_main_ret:=0}
+    [[ ${exit_status} -eq 0 && ${nxf_unstage_ret:=0} -ne 0 ]] && exit_status=${nxf_unstage_ret:=0}
+    [[ ${exit_status} -eq 0 && ${last_err} -ne 0 ]] && exit_status=${last_err}
+    printf -- $exit_status > /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/.exitcode
+    set +u
+    docker rm $NXF_BOXID &>/dev/null || true
+    exit $exit_status
+}
+
+on_term() {
+    set +e
+    docker stop $NXF_BOXID
+}
+
+nxf_launch() {
+    docker run -i --cpu-shares 2048 --memory 12288m -e "NXF_TASK_WORKDIR" -e "NXF_DEBUG=${NXF_DEBUG:=0}" -v /home/katwre:/home/katwre -w "$NXF_TASK_WORKDIR" -u $(id -u):$(id -g) --name $NXF_BOXID quay.io/biocontainers/pandas:1.1.5 /bin/bash -c "eval $(nxf_container_env); bash -C -e -u -o pipefail /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/.command.run nxf_trace"
+}
+
+nxf_stage() {
+    true
+    # stage input files
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta181.gz ASV_post_clustering.clusters.fasta181.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta261.gz ASV_post_clustering.clusters.fasta261.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta152.gz ASV_post_clustering.clusters.fasta152.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta284.gz ASV_post_clustering.clusters.fasta284.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta290.gz ASV_post_clustering.clusters.fasta290.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta169.gz ASV_post_clustering.clusters.fasta169.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta203.gz ASV_post_clustering.clusters.fasta203.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta43.gz ASV_post_clustering.clusters.fasta43.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta4.gz ASV_post_clustering.clusters.fasta4.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta226.gz ASV_post_clustering.clusters.fasta226.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta66.gz ASV_post_clustering.clusters.fasta66.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta89.gz ASV_post_clustering.clusters.fasta89.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta117.gz ASV_post_clustering.clusters.fasta117.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta249.gz ASV_post_clustering.clusters.fasta249.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta14.gz ASV_post_clustering.clusters.fasta14.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta37.gz ASV_post_clustering.clusters.fasta37.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta306.gz ASV_post_clustering.clusters.fasta306.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta90.gz ASV_post_clustering.clusters.fasta90.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta32.gz ASV_post_clustering.clusters.fasta32.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta105.gz ASV_post_clustering.clusters.fasta105.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta214.gz ASV_post_clustering.clusters.fasta214.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta289.gz ASV_post_clustering.clusters.fasta289.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta300.gz ASV_post_clustering.clusters.fasta300.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta84.gz ASV_post_clustering.clusters.fasta84.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta78.gz ASV_post_clustering.clusters.fasta78.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta134.gz ASV_post_clustering.clusters.fasta134.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta186.gz ASV_post_clustering.clusters.fasta186.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta243.gz ASV_post_clustering.clusters.fasta243.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta208.gz ASV_post_clustering.clusters.fasta208.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta26.gz ASV_post_clustering.clusters.fasta26.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta19.gz ASV_post_clustering.clusters.fasta19.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta192.gz ASV_post_clustering.clusters.fasta192.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta140.gz ASV_post_clustering.clusters.fasta140.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta278.gz ASV_post_clustering.clusters.fasta278.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta295.gz ASV_post_clustering.clusters.fasta295.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta95.gz ASV_post_clustering.clusters.fasta95.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta123.gz ASV_post_clustering.clusters.fasta123.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta232.gz ASV_post_clustering.clusters.fasta232.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta158.gz ASV_post_clustering.clusters.fasta158.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta175.gz ASV_post_clustering.clusters.fasta175.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta129.gz ASV_post_clustering.clusters.fasta129.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta215.gz ASV_post_clustering.clusters.fasta215.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta83.gz ASV_post_clustering.clusters.fasta83.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta77.gz ASV_post_clustering.clusters.fasta77.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta135.gz ASV_post_clustering.clusters.fasta135.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta267.gz ASV_post_clustering.clusters.fasta267.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta112.gz ASV_post_clustering.clusters.fasta112.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta209.gz ASV_post_clustering.clusters.fasta209.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta3.gz ASV_post_clustering.clusters.fasta3.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta21.gz ASV_post_clustering.clusters.fasta21.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta168.gz ASV_post_clustering.clusters.fasta168.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta311.gz ASV_post_clustering.clusters.fasta311.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta296.gz ASV_post_clustering.clusters.fasta296.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta254.gz ASV_post_clustering.clusters.fasta254.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta141.gz ASV_post_clustering.clusters.fasta141.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta273.gz ASV_post_clustering.clusters.fasta273.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta197.gz ASV_post_clustering.clusters.fasta197.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta231.gz ASV_post_clustering.clusters.fasta231.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta174.gz ASV_post_clustering.clusters.fasta174.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta50.gz ASV_post_clustering.clusters.fasta50.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta180.gz ASV_post_clustering.clusters.fasta180.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta237.gz ASV_post_clustering.clusters.fasta237.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta262.gz ASV_post_clustering.clusters.fasta262.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta55.gz ASV_post_clustering.clusters.fasta55.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta157.gz ASV_post_clustering.clusters.fasta157.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta220.gz ASV_post_clustering.clusters.fasta220.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta279.gz ASV_post_clustering.clusters.fasta279.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta49.gz ASV_post_clustering.clusters.fasta49.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta9.gz ASV_post_clustering.clusters.fasta9.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta61.gz ASV_post_clustering.clusters.fasta61.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta44.gz ASV_post_clustering.clusters.fasta44.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta146.gz ASV_post_clustering.clusters.fasta146.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta163.gz ASV_post_clustering.clusters.fasta163.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta248.gz ASV_post_clustering.clusters.fasta248.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta118.gz ASV_post_clustering.clusters.fasta118.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta13.gz ASV_post_clustering.clusters.fasta13.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta38.gz ASV_post_clustering.clusters.fasta38.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta72.gz ASV_post_clustering.clusters.fasta72.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta305.gz ASV_post_clustering.clusters.fasta305.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta213.gz ASV_post_clustering.clusters.fasta213.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta104.gz ASV_post_clustering.clusters.fasta104.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta236.gz ASV_post_clustering.clusters.fasta236.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta10.gz ASV_post_clustering.clusters.fasta10.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta259.gz ASV_post_clustering.clusters.fasta259.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta207.gz ASV_post_clustering.clusters.fasta207.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta242.gz ASV_post_clustering.clusters.fasta242.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta94.gz ASV_post_clustering.clusters.fasta94.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta124.gz ASV_post_clustering.clusters.fasta124.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta136.gz ASV_post_clustering.clusters.fasta136.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta268.gz ASV_post_clustering.clusters.fasta268.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta159.gz ASV_post_clustering.clusters.fasta159.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta302.gz ASV_post_clustering.clusters.fasta302.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta176.gz ASV_post_clustering.clusters.fasta176.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta71.gz ASV_post_clustering.clusters.fasta71.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta199.gz ASV_post_clustering.clusters.fasta199.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta130.gz ASV_post_clustering.clusters.fasta130.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta182.gz ASV_post_clustering.clusters.fasta182.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta285.gz ASV_post_clustering.clusters.fasta285.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta109.gz ASV_post_clustering.clusters.fasta109.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta291.gz ASV_post_clustering.clusters.fasta291.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta99.gz ASV_post_clustering.clusters.fasta99.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta113.gz ASV_post_clustering.clusters.fasta113.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta147.gz ASV_post_clustering.clusters.fasta147.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta47.gz ASV_post_clustering.clusters.fasta47.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta0.gz ASV_post_clustering.clusters.fasta0.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta201.gz ASV_post_clustering.clusters.fasta201.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta42.gz ASV_post_clustering.clusters.fasta42.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta165.gz ASV_post_clustering.clusters.fasta165.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta225.gz ASV_post_clustering.clusters.fasta225.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta253.gz ASV_post_clustering.clusters.fasta253.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta171.gz ASV_post_clustering.clusters.fasta171.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta280.gz ASV_post_clustering.clusters.fasta280.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta88.gz ASV_post_clustering.clusters.fasta88.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta274.gz ASV_post_clustering.clusters.fasta274.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta219.gz ASV_post_clustering.clusters.fasta219.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta53.gz ASV_post_clustering.clusters.fasta53.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta15.gz ASV_post_clustering.clusters.fasta15.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta307.gz ASV_post_clustering.clusters.fasta307.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta36.gz ASV_post_clustering.clusters.fasta36.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta131.gz ASV_post_clustering.clusters.fasta131.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta263.gz ASV_post_clustering.clusters.fasta263.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta286.gz ASV_post_clustering.clusters.fasta286.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta31.gz ASV_post_clustering.clusters.fasta31.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta292.gz ASV_post_clustering.clusters.fasta292.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/39/849fe51a58735dd402eecdd812b818/ASV_table.tsv ASV_table.tsv
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta125.gz ASV_post_clustering.clusters.fasta125.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta148.gz ASV_post_clustering.clusters.fasta148.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta87.gz ASV_post_clustering.clusters.fasta87.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta48.gz ASV_post_clustering.clusters.fasta48.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta60.gz ASV_post_clustering.clusters.fasta60.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta187.gz ASV_post_clustering.clusters.fasta187.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta25.gz ASV_post_clustering.clusters.fasta25.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta193.gz ASV_post_clustering.clusters.fasta193.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta224.gz ASV_post_clustering.clusters.fasta224.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta164.gz ASV_post_clustering.clusters.fasta164.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta170.gz ASV_post_clustering.clusters.fasta170.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta247.gz ASV_post_clustering.clusters.fasta247.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta119.gz ASV_post_clustering.clusters.fasta119.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta218.gz ASV_post_clustering.clusters.fasta218.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta54.gz ASV_post_clustering.clusters.fasta54.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta82.gz ASV_post_clustering.clusters.fasta82.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta103.gz ASV_post_clustering.clusters.fasta103.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta59.gz ASV_post_clustering.clusters.fasta59.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta153.gz ASV_post_clustering.clusters.fasta153.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta258.gz ASV_post_clustering.clusters.fasta258.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta241.gz ASV_post_clustering.clusters.fasta241.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta65.gz ASV_post_clustering.clusters.fasta65.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta202.gz ASV_post_clustering.clusters.fasta202.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta20.gz ASV_post_clustering.clusters.fasta20.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta93.gz ASV_post_clustering.clusters.fasta93.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta5.gz ASV_post_clustering.clusters.fasta5.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta297.gz ASV_post_clustering.clusters.fasta297.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta114.gz ASV_post_clustering.clusters.fasta114.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta142.gz ASV_post_clustering.clusters.fasta142.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta269.gz ASV_post_clustering.clusters.fasta269.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta76.gz ASV_post_clustering.clusters.fasta76.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta301.gz ASV_post_clustering.clusters.fasta301.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta230.gz ASV_post_clustering.clusters.fasta230.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta198.gz ASV_post_clustering.clusters.fasta198.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta81.gz ASV_post_clustering.clusters.fasta81.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta108.gz ASV_post_clustering.clusters.fasta108.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta1.gz ASV_post_clustering.clusters.fasta1.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta223.gz ASV_post_clustering.clusters.fasta223.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta23.gz ASV_post_clustering.clusters.fasta23.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta46.gz ASV_post_clustering.clusters.fasta46.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta189.gz ASV_post_clustering.clusters.fasta189.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta200.gz ASV_post_clustering.clusters.fasta200.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta120.gz ASV_post_clustering.clusters.fasta120.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta252.gz ASV_post_clustering.clusters.fasta252.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta166.gz ASV_post_clustering.clusters.fasta166.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta298.gz ASV_post_clustering.clusters.fasta298.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta143.gz ASV_post_clustering.clusters.fasta143.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta275.gz ASV_post_clustering.clusters.fasta275.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta98.gz ASV_post_clustering.clusters.fasta98.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta172.gz ASV_post_clustering.clusters.fasta172.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta75.gz ASV_post_clustering.clusters.fasta75.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta195.gz ASV_post_clustering.clusters.fasta195.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta52.gz ASV_post_clustering.clusters.fasta52.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta155.gz ASV_post_clustering.clusters.fasta155.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta57.gz ASV_post_clustering.clusters.fasta57.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta235.gz ASV_post_clustering.clusters.fasta235.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta264.gz ASV_post_clustering.clusters.fasta264.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta126.gz ASV_post_clustering.clusters.fasta126.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta161.gz ASV_post_clustering.clusters.fasta161.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta281.gz ASV_post_clustering.clusters.fasta281.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta63.gz ASV_post_clustering.clusters.fasta63.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta7.gz ASV_post_clustering.clusters.fasta7.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta70.gz ASV_post_clustering.clusters.fasta70.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta229.gz ASV_post_clustering.clusters.fasta229.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta246.gz ASV_post_clustering.clusters.fasta246.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta303.gz ASV_post_clustering.clusters.fasta303.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta137.gz ASV_post_clustering.clusters.fasta137.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta270.gz ASV_post_clustering.clusters.fasta270.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta102.gz ASV_post_clustering.clusters.fasta102.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta11.gz ASV_post_clustering.clusters.fasta11.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta211.gz ASV_post_clustering.clusters.fasta211.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta154.gz ASV_post_clustering.clusters.fasta154.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta177.gz ASV_post_clustering.clusters.fasta177.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta240.gz ASV_post_clustering.clusters.fasta240.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta58.gz ASV_post_clustering.clusters.fasta58.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta160.gz ASV_post_clustering.clusters.fasta160.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta257.gz ASV_post_clustering.clusters.fasta257.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta282.gz ASV_post_clustering.clusters.fasta282.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta64.gz ASV_post_clustering.clusters.fasta64.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta183.gz ASV_post_clustering.clusters.fasta183.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta41.gz ASV_post_clustering.clusters.fasta41.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta29.gz ASV_post_clustering.clusters.fasta29.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta6.gz ASV_post_clustering.clusters.fasta6.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta92.gz ASV_post_clustering.clusters.fasta92.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta115.gz ASV_post_clustering.clusters.fasta115.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta228.gz ASV_post_clustering.clusters.fasta228.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta138.gz ASV_post_clustering.clusters.fasta138.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta16.gz ASV_post_clustering.clusters.fasta16.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta35.gz ASV_post_clustering.clusters.fasta35.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta212.gz ASV_post_clustering.clusters.fasta212.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta308.gz ASV_post_clustering.clusters.fasta308.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta287.gz ASV_post_clustering.clusters.fasta287.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta107.gz ASV_post_clustering.clusters.fasta107.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta132.gz ASV_post_clustering.clusters.fasta132.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta293.gz ASV_post_clustering.clusters.fasta293.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta245.gz ASV_post_clustering.clusters.fasta245.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta86.gz ASV_post_clustering.clusters.fasta86.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta206.gz ASV_post_clustering.clusters.fasta206.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta149.gz ASV_post_clustering.clusters.fasta149.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta188.gz ASV_post_clustering.clusters.fasta188.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta24.gz ASV_post_clustering.clusters.fasta24.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta69.gz ASV_post_clustering.clusters.fasta69.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta251.gz ASV_post_clustering.clusters.fasta251.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta121.gz ASV_post_clustering.clusters.fasta121.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta276.gz ASV_post_clustering.clusters.fasta276.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta97.gz ASV_post_clustering.clusters.fasta97.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta217.gz ASV_post_clustering.clusters.fasta217.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta234.gz ASV_post_clustering.clusters.fasta234.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta194.gz ASV_post_clustering.clusters.fasta194.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta30.gz ASV_post_clustering.clusters.fasta30.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta56.gz ASV_post_clustering.clusters.fasta56.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta179.gz ASV_post_clustering.clusters.fasta179.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta79.gz ASV_post_clustering.clusters.fasta79.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta156.gz ASV_post_clustering.clusters.fasta156.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta288.gz ASV_post_clustering.clusters.fasta288.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta127.gz ASV_post_clustering.clusters.fasta127.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta133.gz ASV_post_clustering.clusters.fasta133.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta265.gz ASV_post_clustering.clusters.fasta265.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta185.gz ASV_post_clustering.clusters.fasta185.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta162.gz ASV_post_clustering.clusters.fasta162.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta294.gz ASV_post_clustering.clusters.fasta294.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta62.gz ASV_post_clustering.clusters.fasta62.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta8.gz ASV_post_clustering.clusters.fasta8.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta85.gz ASV_post_clustering.clusters.fasta85.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta110.gz ASV_post_clustering.clusters.fasta110.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta27.gz ASV_post_clustering.clusters.fasta27.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta191.gz ASV_post_clustering.clusters.fasta191.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta271.gz ASV_post_clustering.clusters.fasta271.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta256.gz ASV_post_clustering.clusters.fasta256.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta101.gz ASV_post_clustering.clusters.fasta101.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta233.gz ASV_post_clustering.clusters.fasta233.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta216.gz ASV_post_clustering.clusters.fasta216.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta18.gz ASV_post_clustering.clusters.fasta18.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta210.gz ASV_post_clustering.clusters.fasta210.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta33.gz ASV_post_clustering.clusters.fasta33.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta80.gz ASV_post_clustering.clusters.fasta80.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta260.gz ASV_post_clustering.clusters.fasta260.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta239.gz ASV_post_clustering.clusters.fasta239.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta151.gz ASV_post_clustering.clusters.fasta151.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta204.gz ASV_post_clustering.clusters.fasta204.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta22.gz ASV_post_clustering.clusters.fasta22.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta222.gz ASV_post_clustering.clusters.fasta222.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta299.gz ASV_post_clustering.clusters.fasta299.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta310.gz ASV_post_clustering.clusters.fasta310.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta67.gz ASV_post_clustering.clusters.fasta67.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta91.gz ASV_post_clustering.clusters.fasta91.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta116.gz ASV_post_clustering.clusters.fasta116.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta144.gz ASV_post_clustering.clusters.fasta144.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta74.gz ASV_post_clustering.clusters.fasta74.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta196.gz ASV_post_clustering.clusters.fasta196.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta106.gz ASV_post_clustering.clusters.fasta106.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta238.gz ASV_post_clustering.clusters.fasta238.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta150.gz ASV_post_clustering.clusters.fasta150.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta244.gz ASV_post_clustering.clusters.fasta244.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta221.gz ASV_post_clustering.clusters.fasta221.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta205.gz ASV_post_clustering.clusters.fasta205.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta68.gz ASV_post_clustering.clusters.fasta68.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta45.gz ASV_post_clustering.clusters.fasta45.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta250.gz ASV_post_clustering.clusters.fasta250.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta145.gz ASV_post_clustering.clusters.fasta145.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta277.gz ASV_post_clustering.clusters.fasta277.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta96.gz ASV_post_clustering.clusters.fasta96.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta122.gz ASV_post_clustering.clusters.fasta122.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta304.gz ASV_post_clustering.clusters.fasta304.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta12.gz ASV_post_clustering.clusters.fasta12.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta39.gz ASV_post_clustering.clusters.fasta39.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta73.gz ASV_post_clustering.clusters.fasta73.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta178.gz ASV_post_clustering.clusters.fasta178.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta128.gz ASV_post_clustering.clusters.fasta128.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta266.gz ASV_post_clustering.clusters.fasta266.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta283.gz ASV_post_clustering.clusters.fasta283.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta111.gz ASV_post_clustering.clusters.fasta111.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta184.gz ASV_post_clustering.clusters.fasta184.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta28.gz ASV_post_clustering.clusters.fasta28.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta40.gz ASV_post_clustering.clusters.fasta40.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta2.gz ASV_post_clustering.clusters.fasta2.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta190.gz ASV_post_clustering.clusters.fasta190.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta227.gz ASV_post_clustering.clusters.fasta227.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta167.gz ASV_post_clustering.clusters.fasta167.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta139.gz ASV_post_clustering.clusters.fasta139.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta272.gz ASV_post_clustering.clusters.fasta272.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta255.gz ASV_post_clustering.clusters.fasta255.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta100.gz ASV_post_clustering.clusters.fasta100.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta173.gz ASV_post_clustering.clusters.fasta173.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta17.gz ASV_post_clustering.clusters.fasta17.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta309.gz ASV_post_clustering.clusters.fasta309.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta34.gz ASV_post_clustering.clusters.fasta34.gz
+    ln -s /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/65/f45524f70efdcade914808cd725896/ASV_post_clustering.clusters.fasta51.gz ASV_post_clustering.clusters.fasta51.gz
+}
+
+nxf_unstage_outputs() {
+    true
+}
+
+nxf_unstage_controls() {
+    true
+}
+
+nxf_unstage() {
+    if [[ ${nxf_main_ret:=0} == 0 ]]; then
+        (set -e -o pipefail; (nxf_unstage_outputs | tee -a .command.out) 3>&1 1>&2 2>&3 | tee -a .command.err)
+        nxf_unstage_ret=$?
+    fi
+    nxf_unstage_controls
+}
+
+nxf_main() {
+    trap on_exit EXIT
+    trap on_term TERM INT USR2
+    trap '' USR1
+
+    [[ "${NXF_CHDIR:-}" ]] && cd "$NXF_CHDIR"
+    export NXF_BOXID="nxf-$(dd bs=18 count=1 if=/dev/urandom 2>/dev/null | base64 | tr +/ 0A | tr -d '\r\n')"
+    NXF_SCRATCH=''
+    [[ $NXF_DEBUG > 0 ]] && nxf_env
+    touch /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/5d/208c36782f8f23ecb0fa199d04a79d/.command.begin
+    set +u
+    set -u
+    [[ $NXF_SCRATCH ]] && cd $NXF_SCRATCH
+    export NXF_TASK_WORKDIR="$PWD"
+    nxf_stage
+
+    set +e
+    (set -o pipefail; (nxf_launch | tee .command.out) 3>&1 1>&2 2>&3 | tee .command.err) &
+    pid=$!
+    wait $pid || nxf_main_ret=$?
+    nxf_unstage
+}
+
+$NXF_ENTRY

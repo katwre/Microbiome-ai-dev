@@ -1,0 +1,2 @@
+Imported greengenes85.fna as DNASequencesDirectoryFormat to ref-seq.qza
+Imported greengenes85.tax as HeaderlessTSVTaxonomyFormat to ref-taxonomy.qza

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}, "axis": {"labelLimit": 1000}, "axisY": {"titleAlign": "left", "titleAngle": 0, "titleY": -10}, "legend": {"cornerRadius": 10, "padding": 10, "strokeColor": "gray"}}, "layer": [{"mark": {"type": "bar"}, "encoding": {"color": {"field": "enriched", "sort": "descending", "title": "Relative to reference", "type": "nominal"}, "tooltip": [{"field": "feature", "type": "nominal"}, {"field": "lfc", "type": "quantitative"}, {"field": "q_val", "type": "quantitative"}, {"field": "se", "type": "quantitative"}, {"field": "error-lower", "type": "quantitative"}, {"field": "error-upper", "type": "quantitative"}], "x": {"field": "lfc", "title": "Log Fold Change (LFC)", "type": "quantitative"}, "y": {"field": "y_label", "sort": {"field": "lfc", "op": "min", "order": "descending"}, "title": "Feature ID", "type": "nominal"}}}, {"mark": {"type": "rule", "color": "black"}, "encoding": {"x": {"field": "error-lower", "type": "quantitative"}, "x2": {"field": "error-upper"}, "y": {"field": "y_label", "sort": {"field": "lfc", "op": "min", "order": "descending"}, "title": "Feature ID", "type": "nominal"}}}], "data": {"name": "data-f21ea13f267a10cdbdbd72a5ea98aa7b"}, "title": "treatment1a", "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-f21ea13f267a10cdbdbd72a5ea98aa7b": [{"id": "Bacteria;Omnitrophota;Koll11;GIF10", "lfc": -6.166489088520788, "se": 0.3120752586783856, "q_val": 1.5911909212795658e-85, "y_label": "Bacteria;Omnitrophota;Koll11;GIF10", "feature": "Bacteria;Omnitrophota;Koll11;GIF10", "enriched": "depleted", "error-upper": -5.854413829842403, "error-lower": -6.478564347199174}, {"id": "Bacteria;Proteobacteria;Gammaproteobacteria;Burkholderiales", "lfc": -5.140312923228846, "se": 0.2262308760705283, "q_val": 6.861096127353306e-113, "y_label": "Bacteria;Proteobacteria;Gammaproteobacteria;Burkholderiales", "feature": "Bacteria;Proteobacteria;Gammaproteobacteria;Burkholderiales", "enriched": "depleted", "error-upper": -4.914082047158318, "error-lower": -5.366543799299374}, {"id": "Bacteria;Bacteroidota;Bacteroidia;Chitinophagales", "lfc": -4.385425214283391, "se": 0.3386603895679641, "q_val": 4.74025848787228e-37, "y_label": "Bacteria;Bacteroidota;Bacteroidia;Chitinophagales", "feature": "Bacteria;Bacteroidota;Bacteroidia;Chitinophagales", "enriched": "depleted", "error-upper": -4.046764824715426, "error-lower": -4.724085603851355}, {"id": "Bacteria;Nitrospirota;Nitrospiria;Nitrospirales", "lfc": -3.688293948898857, "se": 0.1193554560334111, "q_val": 3.0539200910586188e-208, "y_label": "Bacteria;Nitrospirota;Nitrospiria;Nitrospirales", "feature": "Bacteria;Nitrospirota;Nitrospiria;Nitrospirales", "enriched": "depleted", "error-upper": -3.568938492865446, "error-lower": -3.8076494049322682}, {"id": "Bacteria;Gemmatimonadota;Gemmatimonadetes;Gemmatimonadales", "lfc": -3.947690845606441, "se": 0.2152915155352432, "q_val": 9.734837544474984e-74, "y_label": "Bacteria;Gemmatimonadota;Gemmatimonadetes;Gemmatimonadales", "feature": "Bacteria;Gemmatimonadota;Gemmatimonadetes;Gemmatimonadales", "enriched": "depleted", "error-upper": -3.732399330071198, "error-lower": -4.162982361141684}, {"id": "Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales", "lfc": -3.74355493107336, "se": 0.4472618676994938, "q_val": 1.0376577197988276e-15, "y_label": "Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales", "feature": "Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales", "enriched": "depleted", "error-upper": -3.296293063373866, "error-lower": -4.190816798772854}, {"id": "Bacteria;Nitrospirota;Thermodesulfovibrionia;UBA6902", "lfc": 2.603817877296956, "se": 0.0919236822211648, "q_val": 4.316067880706607e-175, "y_label": "Bacteria;Nitrospirota;Thermodesulfovibrionia;UBA6902", "feature": "Bacteria;Nitrospirota;Thermodesulfovibrionia;UBA6902", "enriched": "enriched", "error-upper": 2.6957415595181207, "error-lower": 2.511894195075791}, {"id": "Bacteria;Firmicutes;Bacilli;", "lfc": -5.283285149505467, "se": 0.1233305214900378, "q_val": 0.0, "y_label": "Bacteria;Firmicutes;Bacilli;", "feature": "Bacteria;Firmicutes;Bacilli;", "enriched": "depleted", "error-upper": -5.159954628015429, "error-lower": -5.406615670995505}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>

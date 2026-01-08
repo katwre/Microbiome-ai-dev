@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>q2_composition : tabulate</title>
+    <link rel="stylesheet" href="./q2templateassets/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./q2templateassets/css/normalize.css"/>
+    <link rel="stylesheet" href="./q2templateassets/css/base-template.css"/>
+    <script src="./q2templateassets/js/jquery-3.2.0.min.js" charset="utf-8"></script>
+    <script src="./q2templateassets/js/bootstrap.min.js" charset="utf-8"></script>
+    
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 10px;
+      background: #f2f2f2;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 700px;
+      background: #efefef;
+      box-shadow: 0 48px 80px -32px rgba(0,0,0,0.3);
+    }
+
+    .input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .label {
+      width: 100%;
+      padding: 20px 30px;
+      background: #e5e5e5;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      color: #7f7f7f;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .label:hover {
+      background: #d8d8d8;
+    }
+
+    .label:active {
+      background: #ccc;
+    }
+
+    .input:focus + .label {
+      box-shadow: inset 0px 0px 0px 3px #2aa1c0;
+      z-index: 1;
+    }
+
+    .input:checked + .label {
+      background: #fff;
+      color: #000;
+    }
+
+    @media (min-width: 600px) {
+      .label {
+        width: auto;
+      }
+    }
+
+    .panel {
+      display: none;
+      padding: 20px 30px 30px;
+      background: #fff;
+    }
+
+    @media (min-width: 600px) {
+      .panel {
+        order: 99;
+      }
+    }
+
+    .input:checked + .label + .panel {
+      display: block;
+    }
+  </style>
+
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div id="q2templatesheader" class="row">
+        <div class="col-lg-12">
+          <a href="http://qiime2.org/">
+            <img src="./q2templateassets/img/qiime2-rect-200.png"
+            alt="QIIME 2">
+          </a>
+        </div>
+      </div>
+        
+  <div class="tabs">
+    
+    
+      
+        <input name="tabs" type="radio" id="lfc" checked="checked" class="input"/>
+      
+      
+      <label for="lfc" class="label">lfc</label>
+      <div class="panel">
+      
+        <h1>Log-Fold Change (LFC)</h1>
+          <p>Positive numbers indicate enrichment relative to the intercept,
+          negative numbers indicate depletion relative to the intercept.</p><br>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>badpairwise10::2 (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>badpairwise10a</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>cbff13b5013921139f28a5115cf9f7a8</th>
+      <td>-0.053865</td>
+      <td>0.259192</td>
+    </tr>
+    <tr>
+      <th>25e119f38effd7d58bf3442bd40eaf00</th>
+      <td>0.894695</td>
+      <td>-3.174274</td>
+    </tr>
+    <tr>
+      <th>ee6a011da2550805c6fd434ab053464a</th>
+      <td>-0.491599</td>
+      <td>1.102392</td>
+    </tr>
+    <tr>
+      <th>c4dc084b83476f4b2c829da5b52fcb4d</th>
+      <td>-0.053865</td>
+      <td>0.664657</td>
+    </tr>
+    <tr>
+      <th>02b4cbe5c2955ab2f66dc82cdf6dad64</th>
+      <td>0.369784</td>
+      <td>0.569512</td>
+    </tr>
+    <tr>
+      <th>7e7deb01f0491d33ecb87427fcbeb1ee</th>
+      <td>0.023210</td>
+      <td>-2.302790</td>
+    </tr>
+    <tr>
+      <th>7346ee25c4de4df48f80d736342c1c02</th>
+      <td>1.300160</td>
+      <td>-1.787980</td>
+    </tr>
+    <tr>
+      <th>fb6835364f1d79a14457f24bc50738d0</th>
+      <td>0.201548</td>
+      <td>0.226923</td>
+    </tr>
+    <tr>
+      <th>e04265a1b5b74d599d1000ac0f280268</th>
+      <td>-0.097371</td>
+      <td>0.215687</td>
+    </tr>
+    <tr>
+      <th>67e959ec1398cee2946858ecda5af98b</th>
+      <td>-0.491599</td>
+      <td>-1.787980</td>
+    </tr>
+    <tr>
+      <th>b39f90da9ee92988c2e0f57748c70f4c</th>
+      <td>0.023210</td>
+      <td>0.336268</td>
+    </tr>
+    <tr>
+      <th>7da5a08a0f3713731b1ec0bdefe97783</th>
+      <td>-0.197706</td>
+      <td>-0.002432</td>
+    </tr>
+    <tr>
+      <th>c1cd0bc45f873697ab9156e7147e8d76</th>
+      <td>0.369784</td>
+      <td>0.608733</td>
+    </tr>
+    <tr>
+      <th>a9cdace376f468b22ea7bac7de7e029c</th>
+      <td>0.057707</td>
+      <td>-0.140062</td>
+    </tr>
+    <tr>
+      <th>e149acb95b2ccf99ebccc818ef8aac1f</th>
+      <td>-0.323363</td>
+      <td>-0.346778</td>
+    </tr>
+    <tr>
+      <th>c02e74171a45a7d8308e4581e6b79eab</th>
+      <td>-0.256598</td>
+      <td>0.279603</td>
+    </tr>
+    <tr>
+      <th>59dd6d3f3f896c4309537cf26c3597a3</th>
+      <td>0.351600</td>
+      <td>-2.631180</td>
+    </tr>
+    <tr>
+      <th>d88abff2ed5af388abe3bd71809f70e1</th>
+      <td>0.679304</td>
+      <td>0.932937</td>
+    </tr>
+    <tr>
+      <th>2bfdfef3ab9fe4d267c52f8ee5c80ddd</th>
+      <td>0.827929</td>
+      <td>-0.334920</td>
+    </tr>
+    <tr>
+      <th>89fa0981707da59c8cede9f5d70afe62</th>
+      <td>0.057707</td>
+      <td>0.658446</td>
+    </tr>
+    <tr>
+      <th>f86222ce0aa7c48d5994451baf572b60</th>
+      <td>0.436550</td>
+      <td>-2.716129</td>
+    </tr>
+    <tr>
+      <th>b7d6cf3f7467ca45087ca083796a0af0</th>
+      <td>1.006267</td>
+      <td>-3.285846</td>
+    </tr>
+    <tr>
+      <th>d69464b2275c7c4514b5858d01db39b8</th>
+      <td>0.120288</td>
+      <td>0.544571</td>
+    </tr>
+    <tr>
+      <th>3421464bea79a54e7eef62009457230b</th>
+      <td>0.535463</td>
+      <td>1.013599</td>
+    </tr>
+    <tr>
+      <th>8b91e5b1c412877f96a4a342ab6dc680</th>
+      <td>0.387330</td>
+      <td>-1.057471</td>
+    </tr>
+    <tr>
+      <th>1304d0f9dc2397bbf02e61577a2f5adc</th>
+      <td>0.089976</td>
+      <td>-0.066970</td>
+    </tr>
+    <tr>
+      <th>1f8747026500ce37ab66b935d9b1b53e</th>
+      <td>1.067376</td>
+      <td>1.473327</td>
+    </tr>
+    <tr>
+      <th>38c27ceaed634984c1225a82648cf571</th>
+      <td>2.007682</td>
+      <td>-0.112874</td>
+    </tr>
+    <tr>
+      <th>266d3c050f6688d15024f3c36c9328d8</th>
+      <td>0.023210</td>
+      <td>-0.105565</td>
+    </tr>
+    <tr>
+      <th>b39be459cc96689db8cd6b00a0d86e8e</th>
+      <td>3.070640</td>
+      <td>-5.350219</td>
+    </tr>
+    <tr>
+      <th>87e503bff5c5886e5938a97aa0afb1d5</th>
+      <td>-0.013844</td>
+      <td>0.132160</td>
+    </tr>
+    <tr>
+      <th>615d65be0a5ba4f62e9d7aa1bffb4277</th>
+      <td>0.057707</td>
+      <td>0.658446</td>
+    </tr>
+    <tr>
+      <th>3ebe761bfb1238c87195d431f41bf976</th>
+      <td>2.422873</td>
+      <td>-1.758014</td>
+    </tr>
+    <tr>
+      <th>fc3f584449d707e80bd4aa0efcd65508</th>
+      <td>0.089976</td>
+      <td>-2.369555</td>
+    </tr>
+    <tr>
+      <th>54c05a1e59ddd42bd97a0a8f522bf591</th>
+      <td>-0.491599</td>
+      <td>0.291461</td>
+    </tr>
+    <tr>
+      <th>906a06fc904a9a11c50b0a100467961b</th>
+      <td>-0.256598</td>
+      <td>-0.077072</td>
+    </tr>
+    <tr>
+      <th>aeda648ef1ccaf013a70453eee0caf8a</th>
+      <td>1.612237</td>
+      <td>-0.457829</td>
+    </tr>
+    <tr>
+      <th>da13eb51a23731d1542076afd2a4882d</th>
+      <td>0.249203</td>
+      <td>-2.528782</td>
+    </tr>
+    <tr>
+      <th>b230be8a10f78f48e504b8dc5cfa7afb</th>
+      <td>0.057707</td>
+      <td>-0.034701</td>
+    </tr>
+    <tr>
+      <th>ec03d66fcea8850ab39fe2bce3814f30</th>
+      <td>0.225943</td>
+      <td>0.790315</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="p_val" class="input"/>
+      
+      
+      <label for="p_val" class="label">p_val</label>
+      <div class="panel">
+      
+        <h1><i>p</i>-Values</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>badpairwise10::2 (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>badpairwise10a</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>cbff13b5013921139f28a5115cf9f7a8</th>
+      <td>9.405590e-01</td>
+      <td>0.741216</td>
+    </tr>
+    <tr>
+      <th>25e119f38effd7d58bf3442bd40eaf00</th>
+      <td>6.258671e-01</td>
+      <td>0.094363</td>
+    </tr>
+    <tr>
+      <th>ee6a011da2550805c6fd434ab053464a</th>
+      <td>2.337452e-01</td>
+      <td>0.020382</td>
+    </tr>
+    <tr>
+      <th>c4dc084b83476f4b2c829da5b52fcb4d</th>
+      <td>9.405590e-01</td>
+      <td>0.397074</td>
+    </tr>
+    <tr>
+      <th>02b4cbe5c2955ab2f66dc82cdf6dad64</th>
+      <td>8.005769e-01</td>
+      <td>0.709066</td>
+    </tr>
+    <tr>
+      <th>7e7deb01f0491d33ecb87427fcbeb1ee</th>
+      <td>9.848068e-01</td>
+      <td>0.072305</td>
+    </tr>
+    <tr>
+      <th>7346ee25c4de4df48f80d736342c1c02</th>
+      <td>1.282650e-01</td>
+      <td>0.051274</td>
+    </tr>
+    <tr>
+      <th>fb6835364f1d79a14457f24bc50738d0</th>
+      <td>8.233759e-01</td>
+      <td>0.814176</td>
+    </tr>
+    <tr>
+      <th>e04265a1b5b74d599d1000ac0f280268</th>
+      <td>8.880362e-01</td>
+      <td>0.774860</td>
+    </tr>
+    <tr>
+      <th>67e959ec1398cee2946858ecda5af98b</th>
+      <td>5.652287e-01</td>
+      <td>0.051274</td>
+    </tr>
+    <tr>
+      <th>b39f90da9ee92988c2e0f57748c70f4c</th>
+      <td>9.761653e-01</td>
+      <td>0.688694</td>
+    </tr>
+    <tr>
+      <th>7da5a08a0f3713731b1ec0bdefe97783</th>
+      <td>7.500729e-01</td>
+      <td>0.997160</td>
+    </tr>
+    <tr>
+      <th>c1cd0bc45f873697ab9156e7147e8d76</th>
+      <td>7.174659e-01</td>
+      <td>0.574561</td>
+    </tr>
+    <tr>
+      <th>a9cdace376f468b22ea7bac7de7e029c</th>
+      <td>9.425860e-01</td>
+      <td>0.871183</td>
+    </tr>
+    <tr>
+      <th>e149acb95b2ccf99ebccc818ef8aac1f</th>
+      <td>5.431543e-01</td>
+      <td>0.559543</td>
+    </tr>
+    <tr>
+      <th>c02e74171a45a7d8308e4581e6b79eab</th>
+      <td>6.576480e-01</td>
+      <td>0.662938</td>
+    </tr>
+    <tr>
+      <th>59dd6d3f3f896c4309537cf26c3597a3</th>
+      <td>8.085420e-01</td>
+      <td>0.082134</td>
+    </tr>
+    <tr>
+      <th>d88abff2ed5af388abe3bd71809f70e1</th>
+      <td>5.840531e-01</td>
+      <td>0.474091</td>
+    </tr>
+    <tr>
+      <th>2bfdfef3ab9fe4d267c52f8ee5c80ddd</th>
+      <td>4.442806e-02</td>
+      <td>0.480180</td>
+    </tr>
+    <tr>
+      <th>89fa0981707da59c8cede9f5d70afe62</th>
+      <td>9.425860e-01</td>
+      <td>0.445871</td>
+    </tr>
+    <tr>
+      <th>f86222ce0aa7c48d5994451baf572b60</th>
+      <td>7.726642e-01</td>
+      <td>0.084337</td>
+    </tr>
+    <tr>
+      <th>b7d6cf3f7467ca45087ca083796a0af0</th>
+      <td>5.990628e-01</td>
+      <td>0.096413</td>
+    </tr>
+    <tr>
+      <th>d69464b2275c7c4514b5858d01db39b8</th>
+      <td>8.868693e-01</td>
+      <td>0.548672</td>
+    </tr>
+    <tr>
+      <th>3421464bea79a54e7eef62009457230b</th>
+      <td>6.382970e-01</td>
+      <td>0.398913</td>
+    </tr>
+    <tr>
+      <th>8b91e5b1c412877f96a4a342ab6dc680</th>
+      <td>7.930419e-01</td>
+      <td>0.491953</td>
+    </tr>
+    <tr>
+      <th>1304d0f9dc2397bbf02e61577a2f5adc</th>
+      <td>9.130567e-01</td>
+      <td>0.939786</td>
+    </tr>
+    <tr>
+      <th>1f8747026500ce37ab66b935d9b1b53e</th>
+      <td>4.811568e-01</td>
+      <td>0.350380</td>
+    </tr>
+    <tr>
+      <th>38c27ceaed634984c1225a82648cf571</th>
+      <td>1.300704e-02</td>
+      <td>0.896874</td>
+    </tr>
+    <tr>
+      <th>266d3c050f6688d15024f3c36c9328d8</th>
+      <td>9.761653e-01</td>
+      <td>0.899914</td>
+    </tr>
+    <tr>
+      <th>b39be459cc96689db8cd6b00a0d86e8e</th>
+      <td>2.094769e-02</td>
+      <td>0.000122</td>
+    </tr>
+    <tr>
+      <th>87e503bff5c5886e5938a97aa0afb1d5</th>
+      <td>9.852865e-01</td>
+      <td>0.870890</td>
+    </tr>
+    <tr>
+      <th>615d65be0a5ba4f62e9d7aa1bffb4277</th>
+      <td>9.425860e-01</td>
+      <td>0.445871</td>
+    </tr>
+    <tr>
+      <th>3ebe761bfb1238c87195d431f41bf976</th>
+      <td>7.910799e-03</td>
+      <td>0.071304</td>
+    </tr>
+    <tr>
+      <th>fc3f584449d707e80bd4aa0efcd65508</th>
+      <td>9.433435e-01</td>
+      <td>0.074491</td>
+    </tr>
+    <tr>
+      <th>54c05a1e59ddd42bd97a0a8f522bf591</th>
+      <td>2.337452e-01</td>
+      <td>0.539755</td>
+    </tr>
+    <tr>
+      <th>906a06fc904a9a11c50b0a100467961b</th>
+      <td>6.576480e-01</td>
+      <td>0.904369</td>
+    </tr>
+    <tr>
+      <th>aeda648ef1ccaf013a70453eee0caf8a</th>
+      <td>2.476875e-29</td>
+      <td>0.026155</td>
+    </tr>
+    <tr>
+      <th>da13eb51a23731d1542076afd2a4882d</th>
+      <td>8.565564e-01</td>
+      <td>0.079306</td>
+    </tr>
+    <tr>
+      <th>b230be8a10f78f48e504b8dc5cfa7afb</th>
+      <td>9.425860e-01</td>
+      <td>0.967953</td>
+    </tr>
+    <tr>
+      <th>ec03d66fcea8850ab39fe2bce3814f30</th>
+      <td>8.060453e-01</td>
+      <td>0.421268</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="q_val" class="input"/>
+      
+      
+      <label for="q_val" class="label">q_val</label>
+      <div class="panel">
+      
+        <h1><i>q</i>-Values: FDR Corrected <i>p</i>-Values</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>badpairwise10::2 (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>badpairwise10a</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>cbff13b5013921139f28a5115cf9f7a8</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>25e119f38effd7d58bf3442bd40eaf00</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>ee6a011da2550805c6fd434ab053464a</th>
+      <td>1.000000e+00</td>
+      <td>0.794908</td>
+    </tr>
+    <tr>
+      <th>c4dc084b83476f4b2c829da5b52fcb4d</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>02b4cbe5c2955ab2f66dc82cdf6dad64</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>7e7deb01f0491d33ecb87427fcbeb1ee</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>7346ee25c4de4df48f80d736342c1c02</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>fb6835364f1d79a14457f24bc50738d0</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>e04265a1b5b74d599d1000ac0f280268</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>67e959ec1398cee2946858ecda5af98b</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>b39f90da9ee92988c2e0f57748c70f4c</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>7da5a08a0f3713731b1ec0bdefe97783</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>c1cd0bc45f873697ab9156e7147e8d76</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>a9cdace376f468b22ea7bac7de7e029c</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>e149acb95b2ccf99ebccc818ef8aac1f</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>c02e74171a45a7d8308e4581e6b79eab</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>59dd6d3f3f896c4309537cf26c3597a3</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>d88abff2ed5af388abe3bd71809f70e1</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>2bfdfef3ab9fe4d267c52f8ee5c80ddd</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>89fa0981707da59c8cede9f5d70afe62</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>f86222ce0aa7c48d5994451baf572b60</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>b7d6cf3f7467ca45087ca083796a0af0</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>d69464b2275c7c4514b5858d01db39b8</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>3421464bea79a54e7eef62009457230b</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>8b91e5b1c412877f96a4a342ab6dc680</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>1304d0f9dc2397bbf02e61577a2f5adc</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>1f8747026500ce37ab66b935d9b1b53e</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>38c27ceaed634984c1225a82648cf571</th>
+      <td>4.942675e-01</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>266d3c050f6688d15024f3c36c9328d8</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>b39be459cc96689db8cd6b00a0d86e8e</th>
+      <td>7.750646e-01</td>
+      <td>0.004872</td>
+    </tr>
+    <tr>
+      <th>87e503bff5c5886e5938a97aa0afb1d5</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>615d65be0a5ba4f62e9d7aa1bffb4277</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>3ebe761bfb1238c87195d431f41bf976</th>
+      <td>3.085212e-01</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>fc3f584449d707e80bd4aa0efcd65508</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>54c05a1e59ddd42bd97a0a8f522bf591</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>906a06fc904a9a11c50b0a100467961b</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>aeda648ef1ccaf013a70453eee0caf8a</th>
+      <td>9.907500e-28</td>
+      <td>0.993908</td>
+    </tr>
+    <tr>
+      <th>da13eb51a23731d1542076afd2a4882d</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>b230be8a10f78f48e504b8dc5cfa7afb</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+    <tr>
+      <th>ec03d66fcea8850ab39fe2bce3814f30</th>
+      <td>1.000000e+00</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="se" class="input"/>
+      
+      
+      <label for="se" class="label">se</label>
+      <div class="panel">
+      
+        <h1>Standard Error</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>badpairwise10::2 (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>badpairwise10a</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>cbff13b5013921139f28a5115cf9f7a8</th>
+      <td>0.722368</td>
+      <td>0.784850</td>
+    </tr>
+    <tr>
+      <th>25e119f38effd7d58bf3442bd40eaf00</th>
+      <td>1.835076</td>
+      <td>1.897559</td>
+    </tr>
+    <tr>
+      <th>ee6a011da2550805c6fd434ab053464a</th>
+      <td>0.412843</td>
+      <td>0.475325</td>
+    </tr>
+    <tr>
+      <th>c4dc084b83476f4b2c829da5b52fcb4d</th>
+      <td>0.722368</td>
+      <td>0.784850</td>
+    </tr>
+    <tr>
+      <th>02b4cbe5c2955ab2f66dc82cdf6dad64</th>
+      <td>1.463908</td>
+      <td>1.526390</td>
+    </tr>
+    <tr>
+      <th>7e7deb01f0491d33ecb87427fcbeb1ee</th>
+      <td>1.218843</td>
+      <td>1.281326</td>
+    </tr>
+    <tr>
+      <th>7346ee25c4de4df48f80d736342c1c02</th>
+      <td>0.854818</td>
+      <td>0.917300</td>
+    </tr>
+    <tr>
+      <th>fb6835364f1d79a14457f24bc50738d0</th>
+      <td>0.902972</td>
+      <td>0.965455</td>
+    </tr>
+    <tr>
+      <th>e04265a1b5b74d599d1000ac0f280268</th>
+      <td>0.691605</td>
+      <td>0.754087</td>
+    </tr>
+    <tr>
+      <th>67e959ec1398cee2946858ecda5af98b</th>
+      <td>0.854818</td>
+      <td>0.917300</td>
+    </tr>
+    <tr>
+      <th>b39f90da9ee92988c2e0f57748c70f4c</th>
+      <td>0.776868</td>
+      <td>0.839351</td>
+    </tr>
+    <tr>
+      <th>7da5a08a0f3713731b1ec0bdefe97783</th>
+      <td>0.620657</td>
+      <td>0.683139</td>
+    </tr>
+    <tr>
+      <th>c1cd0bc45f873697ab9156e7147e8d76</th>
+      <td>1.021933</td>
+      <td>1.084415</td>
+    </tr>
+    <tr>
+      <th>a9cdace376f468b22ea7bac7de7e029c</th>
+      <td>0.801261</td>
+      <td>0.863744</td>
+    </tr>
+    <tr>
+      <th>e149acb95b2ccf99ebccc818ef8aac1f</th>
+      <td>0.531804</td>
+      <td>0.594286</td>
+    </tr>
+    <tr>
+      <th>c02e74171a45a7d8308e4581e6b79eab</th>
+      <td>0.579014</td>
+      <td>0.641497</td>
+    </tr>
+    <tr>
+      <th>59dd6d3f3f896c4309537cf26c3597a3</th>
+      <td>1.451050</td>
+      <td>1.513532</td>
+    </tr>
+    <tr>
+      <th>d88abff2ed5af388abe3bd71809f70e1</th>
+      <td>1.240796</td>
+      <td>1.303279</td>
+    </tr>
+    <tr>
+      <th>2bfdfef3ab9fe4d267c52f8ee5c80ddd</th>
+      <td>0.411899</td>
+      <td>0.474382</td>
+    </tr>
+    <tr>
+      <th>89fa0981707da59c8cede9f5d70afe62</th>
+      <td>0.801261</td>
+      <td>0.863744</td>
+    </tr>
+    <tr>
+      <th>f86222ce0aa7c48d5994451baf572b60</th>
+      <td>1.511118</td>
+      <td>1.573601</td>
+    </tr>
+    <tr>
+      <th>b7d6cf3f7467ca45087ca083796a0af0</th>
+      <td>1.913969</td>
+      <td>1.976452</td>
+    </tr>
+    <tr>
+      <th>d69464b2275c7c4514b5858d01db39b8</th>
+      <td>0.845513</td>
+      <td>0.907995</td>
+    </tr>
+    <tr>
+      <th>3421464bea79a54e7eef62009457230b</th>
+      <td>1.139085</td>
+      <td>1.201568</td>
+    </tr>
+    <tr>
+      <th>8b91e5b1c412877f96a4a342ab6dc680</th>
+      <td>1.476314</td>
+      <td>1.538797</td>
+    </tr>
+    <tr>
+      <th>1304d0f9dc2397bbf02e61577a2f5adc</th>
+      <td>0.824079</td>
+      <td>0.886561</td>
+    </tr>
+    <tr>
+      <th>1f8747026500ce37ab66b935d9b1b53e</th>
+      <td>1.515204</td>
+      <td>1.577687</td>
+    </tr>
+    <tr>
+      <th>38c27ceaed634984c1225a82648cf571</th>
+      <td>0.808383</td>
+      <td>0.870866</td>
+    </tr>
+    <tr>
+      <th>266d3c050f6688d15024f3c36c9328d8</th>
+      <td>0.776868</td>
+      <td>0.839351</td>
+    </tr>
+    <tr>
+      <th>b39be459cc96689db8cd6b00a0d86e8e</th>
+      <td>1.329900</td>
+      <td>1.392382</td>
+    </tr>
+    <tr>
+      <th>87e503bff5c5886e5938a97aa0afb1d5</th>
+      <td>0.750667</td>
+      <td>0.813150</td>
+    </tr>
+    <tr>
+      <th>615d65be0a5ba4f62e9d7aa1bffb4277</th>
+      <td>0.801261</td>
+      <td>0.863744</td>
+    </tr>
+    <tr>
+      <th>3ebe761bfb1238c87195d431f41bf976</th>
+      <td>0.912277</td>
+      <td>0.974760</td>
+    </tr>
+    <tr>
+      <th>fc3f584449d707e80bd4aa0efcd65508</th>
+      <td>1.266054</td>
+      <td>1.328536</td>
+    </tr>
+    <tr>
+      <th>54c05a1e59ddd42bd97a0a8f522bf591</th>
+      <td>0.412843</td>
+      <td>0.475325</td>
+    </tr>
+    <tr>
+      <th>906a06fc904a9a11c50b0a100467961b</th>
+      <td>0.579014</td>
+      <td>0.641497</td>
+    </tr>
+    <tr>
+      <th>aeda648ef1ccaf013a70453eee0caf8a</th>
+      <td>0.143386</td>
+      <td>0.205868</td>
+    </tr>
+    <tr>
+      <th>da13eb51a23731d1542076afd2a4882d</th>
+      <td>1.378644</td>
+      <td>1.441127</td>
+    </tr>
+    <tr>
+      <th>b230be8a10f78f48e504b8dc5cfa7afb</th>
+      <td>0.801261</td>
+      <td>0.863744</td>
+    </tr>
+    <tr>
+      <th>ec03d66fcea8850ab39fe2bce3814f30</th>
+      <td>0.920222</td>
+      <td>0.982704</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+      
+        <input name="tabs" type="radio" id="w" class="input"/>
+      
+      
+      <label for="w" class="label">w</label>
+      <div class="panel">
+      
+        <h1><i>W</i>-Scores: Log-Fold Change divided by the Standard Error</h1>
+      
+      
+        <p><b>Groups used to define the intercept:</b></p>
+        <p>badpairwise10::2 (and any numerical metadata columns)</p>
+      
+      <table class="dataframe table table-striped table-hover" border="0"><table border="0" class="dataframe table table-striped table-hover">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(Intercept)</th>
+      <th>badpairwise10a</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>cbff13b5013921139f28a5115cf9f7a8</th>
+      <td>-0.074567</td>
+      <td>0.330244</td>
+    </tr>
+    <tr>
+      <th>25e119f38effd7d58bf3442bd40eaf00</th>
+      <td>0.487552</td>
+      <td>-1.672820</td>
+    </tr>
+    <tr>
+      <th>ee6a011da2550805c6fd434ab053464a</th>
+      <td>-1.190767</td>
+      <td>2.319236</td>
+    </tr>
+    <tr>
+      <th>c4dc084b83476f4b2c829da5b52fcb4d</th>
+      <td>-0.074567</td>
+      <td>0.846859</td>
+    </tr>
+    <tr>
+      <th>02b4cbe5c2955ab2f66dc82cdf6dad64</th>
+      <td>0.252601</td>
+      <td>0.373111</td>
+    </tr>
+    <tr>
+      <th>7e7deb01f0491d33ecb87427fcbeb1ee</th>
+      <td>0.019043</td>
+      <td>-1.797193</td>
+    </tr>
+    <tr>
+      <th>7346ee25c4de4df48f80d736342c1c02</th>
+      <td>1.520979</td>
+      <td>-1.949176</td>
+    </tr>
+    <tr>
+      <th>fb6835364f1d79a14457f24bc50738d0</th>
+      <td>0.223205</td>
+      <td>0.235043</td>
+    </tr>
+    <tr>
+      <th>e04265a1b5b74d599d1000ac0f280268</th>
+      <td>-0.140789</td>
+      <td>0.286023</td>
+    </tr>
+    <tr>
+      <th>67e959ec1398cee2946858ecda5af98b</th>
+      <td>-0.575093</td>
+      <td>-1.949176</td>
+    </tr>
+    <tr>
+      <th>b39f90da9ee92988c2e0f57748c70f4c</th>
+      <td>0.029877</td>
+      <td>0.400628</td>
+    </tr>
+    <tr>
+      <th>7da5a08a0f3713731b1ec0bdefe97783</th>
+      <td>-0.318543</td>
+      <td>-0.003560</td>
+    </tr>
+    <tr>
+      <th>c1cd0bc45f873697ab9156e7147e8d76</th>
+      <td>0.361848</td>
+      <td>0.561347</td>
+    </tr>
+    <tr>
+      <th>a9cdace376f468b22ea7bac7de7e029c</th>
+      <td>0.072020</td>
+      <td>-0.162156</td>
+    </tr>
+    <tr>
+      <th>e149acb95b2ccf99ebccc818ef8aac1f</th>
+      <td>-0.608050</td>
+      <td>-0.583520</td>
+    </tr>
+    <tr>
+      <th>c02e74171a45a7d8308e4581e6b79eab</th>
+      <td>-0.443163</td>
+      <td>0.435861</td>
+    </tr>
+    <tr>
+      <th>59dd6d3f3f896c4309537cf26c3597a3</th>
+      <td>0.242307</td>
+      <td>-1.738436</td>
+    </tr>
+    <tr>
+      <th>d88abff2ed5af388abe3bd71809f70e1</th>
+      <td>0.547474</td>
+      <td>0.715839</td>
+    </tr>
+    <tr>
+      <th>2bfdfef3ab9fe4d267c52f8ee5c80ddd</th>
+      <td>2.010030</td>
+      <td>-0.706014</td>
+    </tr>
+    <tr>
+      <th>89fa0981707da59c8cede9f5d70afe62</th>
+      <td>0.072020</td>
+      <td>0.762317</td>
+    </tr>
+    <tr>
+      <th>f86222ce0aa7c48d5994451baf572b60</th>
+      <td>0.288892</td>
+      <td>-1.726060</td>
+    </tr>
+    <tr>
+      <th>b7d6cf3f7467ca45087ca083796a0af0</th>
+      <td>0.525749</td>
+      <td>-1.662498</td>
+    </tr>
+    <tr>
+      <th>d69464b2275c7c4514b5858d01db39b8</th>
+      <td>0.142267</td>
+      <td>0.599751</td>
+    </tr>
+    <tr>
+      <th>3421464bea79a54e7eef62009457230b</th>
+      <td>0.470081</td>
+      <td>0.843564</td>
+    </tr>
+    <tr>
+      <th>8b91e5b1c412877f96a4a342ab6dc680</th>
+      <td>0.262363</td>
+      <td>-0.687206</td>
+    </tr>
+    <tr>
+      <th>1304d0f9dc2397bbf02e61577a2f5adc</th>
+      <td>0.109184</td>
+      <td>-0.075539</td>
+    </tr>
+    <tr>
+      <th>1f8747026500ce37ab66b935d9b1b53e</th>
+      <td>0.704443</td>
+      <td>0.933852</td>
+    </tr>
+    <tr>
+      <th>38c27ceaed634984c1225a82648cf571</th>
+      <td>2.483577</td>
+      <td>-0.129611</td>
+    </tr>
+    <tr>
+      <th>266d3c050f6688d15024f3c36c9328d8</th>
+      <td>0.029877</td>
+      <td>-0.125770</td>
+    </tr>
+    <tr>
+      <th>b39be459cc96689db8cd6b00a0d86e8e</th>
+      <td>2.308926</td>
+      <td>-3.842493</td>
+    </tr>
+    <tr>
+      <th>87e503bff5c5886e5938a97aa0afb1d5</th>
+      <td>-0.018442</td>
+      <td>0.162528</td>
+    </tr>
+    <tr>
+      <th>615d65be0a5ba4f62e9d7aa1bffb4277</th>
+      <td>0.072020</td>
+      <td>0.762317</td>
+    </tr>
+    <tr>
+      <th>3ebe761bfb1238c87195d431f41bf976</th>
+      <td>2.655853</td>
+      <td>-1.803536</td>
+    </tr>
+    <tr>
+      <th>fc3f584449d707e80bd4aa0efcd65508</th>
+      <td>0.071068</td>
+      <td>-1.783583</td>
+    </tr>
+    <tr>
+      <th>54c05a1e59ddd42bd97a0a8f522bf591</th>
+      <td>-1.190767</td>
+      <td>0.613183</td>
+    </tr>
+    <tr>
+      <th>906a06fc904a9a11c50b0a100467961b</th>
+      <td>-0.443163</td>
+      <td>-0.120144</td>
+    </tr>
+    <tr>
+      <th>aeda648ef1ccaf013a70453eee0caf8a</th>
+      <td>11.244072</td>
+      <td>-2.223895</td>
+    </tr>
+    <tr>
+      <th>da13eb51a23731d1542076afd2a4882d</th>
+      <td>0.180759</td>
+      <td>-1.754726</td>
+    </tr>
+    <tr>
+      <th>b230be8a10f78f48e504b8dc5cfa7afb</th>
+      <td>0.072020</td>
+      <td>-0.040175</td>
+    </tr>
+    <tr>
+      <th>ec03d66fcea8850ab39fe2bce3814f30</th>
+      <td>0.245531</td>
+      <td>0.804224</td>
+    </tr>
+  </tbody>
+</table></table>
+      </div>
+    
+  </div>
+
+    </div>
+    <script type="text/javascript">
+      if (window.frameElement) {
+          document.getElementById('q2templatesheader').remove();
+      }
+    </script>
+    
+    
+  </body>
+</html>

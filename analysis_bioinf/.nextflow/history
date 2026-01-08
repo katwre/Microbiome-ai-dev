@@ -1,0 +1,2 @@
+2026-01-08 18:47:04	-	deadly_carson	-	d8dd15d5e7760752691357c177bed2e35a2e413f	2f83229b-9c3e-408f-b17a-bd8af10e814d	nextflow run nf-core/ampliseq -profile test,docker
+2026-01-08 18:48:26	22m 26s	admiring_faggin	OK	d8dd15d5e7760752691357c177bed2e35a2e413f	593d3d6a-2560-404c-97e1-63d95e9ef0b1	nextflow run nf-core/ampliseq -profile test,docker --outdir results_test

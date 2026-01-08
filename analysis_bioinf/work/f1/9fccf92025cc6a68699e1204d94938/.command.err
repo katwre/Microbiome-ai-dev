@@ -1,0 +1,39 @@
+Unable to find image 'quay.io/biocontainers/multiqc:1.29--pyhdfd78af_0' locally
+1.29--pyhdfd78af_0: Pulling from biocontainers/multiqc
+36b7914fc8ba: Pulling fs layer
+2cc3d3b08aaa: Pulling fs layer
+bd9ddc54bea9: Pulling fs layer
+d4ece4179126: Pulling fs layer
+d4ece4179126: Waiting
+bd9ddc54bea9: Verifying Checksum
+bd9ddc54bea9: Download complete
+2cc3d3b08aaa: Verifying Checksum
+2cc3d3b08aaa: Download complete
+36b7914fc8ba: Verifying Checksum
+36b7914fc8ba: Download complete
+36b7914fc8ba: Pull complete
+2cc3d3b08aaa: Pull complete
+bd9ddc54bea9: Pull complete
+d4ece4179126: Verifying Checksum
+d4ece4179126: Download complete
+d4ece4179126: Pull complete
+Digest: sha256:f4ebfe78e45dd96f04a9c883e1882e77ac357988a10a7c980df6d500bfc46de6
+Status: Downloaded newer image for quay.io/biocontainers/multiqc:1.29--pyhdfd78af_0
+
+/// MultiQC 🔍 v1.29
+
+            config | Loading config settings from: multiqc_config.yml
+     version_check | MultiQC Version v1.33 now available!
+       file_search | Search path: /home/katwre/projects/Microbiome-ai-dev/analysis_bioinf/work/f1/9fccf92025cc6a68699e1204d94938
+
+    custom_content | nf-core-ampliseq-methods-description: Found 1 sample (html)
+    custom_content | nf-core-ampliseq-summary: Found 1 sample (html)
+          cutadapt | Found 4 reports
+            fastqc | Found 8 reports
+     write_results | Rendering plots. Export plots to formats png, svg, pdf is requested, so it might take a while. To disable plot export, set `export_plots: false` in config, or remove the `--export-plots` command line flag
+
+
+     write_results | Data        : multiqc_data
+     write_results | Report      : multiqc_report.html
+     write_results | Plots       : multiqc_plots
+           multiqc | MultiQC complete

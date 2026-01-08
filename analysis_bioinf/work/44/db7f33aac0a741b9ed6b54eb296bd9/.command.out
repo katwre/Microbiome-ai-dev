@@ -1,0 +1,160 @@
+[1] TRUE
+1/158                   
+2/158 [libraries]       
+3/158                   
+4/158 [setup]           
+5/158                   
+6/158 [unnamed-chunk-1] 
+7/158                   
+8/158 [unnamed-chunk-2] 
+9/158                   
+10/158 [unnamed-chunk-3] 
+11/158                   
+12/158 [unnamed-chunk-4] 
+13/158                   
+14/158 [unnamed-chunk-5] 
+15/158                   
+16/158 [unnamed-chunk-6] 
+17/158                   
+18/158 [unnamed-chunk-7] 
+19/158                   
+20/158 [unnamed-chunk-8] 
+21/158                   
+22/158 [unnamed-chunk-9] 
+23/158                   
+24/158 [unnamed-chunk-10]
+25/158                   
+26/158 [unnamed-chunk-11]
+27/158                   
+28/158 [unnamed-chunk-12]
+29/158                   
+30/158 [unnamed-chunk-13]
+31/158                   
+32/158 [unnamed-chunk-14]
+33/158                   
+34/158 [unnamed-chunk-15]
+35/158                   
+36/158 [unnamed-chunk-16]
+37/158                   
+38/158 [unnamed-chunk-17]
+39/158                   
+40/158 [unnamed-chunk-18]
+41/158                   
+42/158 [unnamed-chunk-19]
+43/158                   
+44/158 [unnamed-chunk-20]
+45/158                   
+46/158 [unnamed-chunk-21]
+47/158                   
+48/158 [unnamed-chunk-22]
+49/158                   
+50/158 [unnamed-chunk-23]
+51/158                   
+52/158 [unnamed-chunk-24]
+53/158                   
+54/158 [unnamed-chunk-25]
+55/158                   
+56/158 [unnamed-chunk-26]
+57/158                   
+58/158 [unnamed-chunk-27]
+59/158                   
+60/158 [unnamed-chunk-28]
+61/158                   
+62/158 [unnamed-chunk-29]
+63/158                   
+64/158 [unnamed-chunk-30]
+65/158                   
+66/158 [unnamed-chunk-31]
+67/158                   
+68/158 [unnamed-chunk-32]
+69/158                   
+70/158 [unnamed-chunk-33]
+71/158                   
+72/158 [unnamed-chunk-34]
+73/158                   
+74/158 [unnamed-chunk-35]
+75/158                   
+76/158 [unnamed-chunk-36]
+77/158                   
+78/158 [unnamed-chunk-37]
+79/158                   
+80/158 [unnamed-chunk-38]
+81/158                   
+82/158 [unnamed-chunk-39]
+83/158                   
+84/158 [unnamed-chunk-40]
+85/158                   
+86/158 [unnamed-chunk-41]
+87/158                   
+88/158 [unnamed-chunk-42]
+89/158                   
+90/158 [unnamed-chunk-43]
+91/158                   
+92/158 [unnamed-chunk-44]
+93/158                   
+94/158 [unnamed-chunk-45]
+95/158                   
+96/158 [unnamed-chunk-46]
+97/158                   
+98/158 [unnamed-chunk-47]
+99/158                   
+100/158 [unnamed-chunk-48]
+101/158                   
+102/158 [unnamed-chunk-49]
+103/158                   
+104/158 [unnamed-chunk-50]
+105/158                   
+106/158 [unnamed-chunk-51]
+107/158                   
+108/158 [unnamed-chunk-52]
+109/158                   
+110/158 [unnamed-chunk-53]
+111/158                   
+112/158 [unnamed-chunk-54]
+113/158                   
+114/158 [unnamed-chunk-55]
+115/158                   
+116/158 [unnamed-chunk-56]
+117/158                   
+118/158 [unnamed-chunk-57]
+119/158                   
+120/158 [unnamed-chunk-58]
+121/158                   
+122/158 [unnamed-chunk-59]
+123/158                   
+124/158 [unnamed-chunk-60]
+125/158                   
+126/158 [unnamed-chunk-61]
+127/158                   
+128/158 [unnamed-chunk-62]
+129/158                   
+130/158 [unnamed-chunk-63]
+131/158                   
+132/158 [unnamed-chunk-64]
+133/158                   
+134/158 [unnamed-chunk-65]
+135/158                   
+136/158 [unnamed-chunk-66]
+137/158 [unnamed-chunk-67]
+138/158 [unnamed-chunk-68]
+139/158                   
+140/158 [unnamed-chunk-69]
+141/158 [unnamed-chunk-70]
+142/158 [unnamed-chunk-71]
+143/158 [unnamed-chunk-72]
+144/158                   
+145/158 [unnamed-chunk-73]
+146/158                   
+147/158 [unnamed-chunk-74]
+148/158 [unnamed-chunk-75]
+149/158 [unnamed-chunk-76]
+150/158                   
+151/158 [unnamed-chunk-77]
+152/158                   
+153/158 [unnamed-chunk-78]
+154/158                   
+155/158 [unnamed-chunk-79]
+156/158                   
+157/158 [unnamed-chunk-80]
+158/158                   
+/usr/local/bin/pandoc +RTS -K512m -RTS template.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output summary_report.html --lua-filter /usr/local/lib/R/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /usr/local/lib/R/library/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --variable bs3=TRUE --section-divs --table-of-contents --toc-depth 3 --variable toc_float=1 --variable toc_selectors=h1,h2,h3 --variable toc_collapsed=1 --variable toc_smooth_scroll=1 --variable toc_print=1 --template /usr/local/lib/R/library/rmarkdown/rmd/h/default.html --highlight-style pygments --number-sections --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /tmp/RtmptWQc7n/rmarkdown-str1b41a3dc45.html 

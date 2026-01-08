@@ -1,0 +1,13 @@
+#!/usr/bin/env bash -C -e -u -o pipefail
+taxref_reformat_gtdb.sh \
+
+#Giving out information
+echo -e "--dada_ref_taxonomy: gtdb=R07-RS207\n" >ref_taxonomy.gtdb_R07-RS207.txt
+echo -e "Title: GTDB - Genome Taxonomy Database - Release R07-RS207\n" >>ref_taxonomy.gtdb_R07-RS207.txt
+echo -e "Citation: Parks DH, Chuvochina M, Waite DW, Rinke C, Skarshewski A, Chaumeil PA, Hugenholtz P. A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life. Nat Biotechnol. 2018 Nov;36(10):996-1004. doi: 10.1038/nbt.4229. Epub 2018 Aug 27. PMID: 30148503.\n" >>ref_taxonomy.gtdb_R07-RS207.txt
+echo "All entries: [title:GTDB - Genome Taxonomy Database - Release R07-RS207, file:[https://data.gtdb.ecogenomic.org/releases/release207/207.0/genomic_files_reps/bac120_ssu_reps_r207.tar.gz, https://data.gtdb.ecogenomic.org/releases/release207/207.0/genomic_files_reps/ar53_ssu_reps_r207.tar.gz], citation:Parks DH, Chuvochina M, Waite DW, Rinke C, Skarshewski A, Chaumeil PA, Hugenholtz P. A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life. Nat Biotechnol. 2018 Nov;36(10):996-1004. doi: 10.1038/nbt.4229. Epub 2018 Aug 27. PMID: 30148503., fmtscript:taxref_reformat_gtdb.sh, dbversion:GTDB R07-RS207 (https://data.gtdb.ecogenomic.org/releases/release207/207.0)]" >>ref_taxonomy.gtdb_R07-RS207.txt
+
+cat <<-END_VERSIONS > versions.yml
+"NFCORE_AMPLISEQ:AMPLISEQ:FORMAT_TAXONOMY":
+    sed: $(sed --version 2>&1 | sed -n 1p | sed 's/sed (GNU sed) //')
+END_VERSIONS

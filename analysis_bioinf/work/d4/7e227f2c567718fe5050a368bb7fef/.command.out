@@ -1,0 +1,38 @@
+Running external command line application. This may print messages to stdout and/or stderr.
+The command being run is below. This command cannot be manually re-run as it will depend on temporary files that no longer exist.
+
+Command:
+
+faithpd -i /tmp/qiime2/uid=#1000/data/2efbbe19-ae23-4d24-a539-fdbddd6effb3/data/feature-table.biom -t /tmp/qiime2/uid=#1000/data/6072f42f-3907-4d92-92b9-4aa4ed243298/data/tree.nwk -o /tmp/qiime2/uid=#1000/processes/117-1767895527.17@uid=#1000/tmp/q2-OutPath-s_epx49o
+
+Running external command line application. This may print messages to stdout and/or stderr.
+The command being run is below. This command cannot be manually re-run as it will depend on temporary files that no longer exist.
+
+Command:
+
+ssu -i /tmp/qiime2/uid=#1000/data/2efbbe19-ae23-4d24-a539-fdbddd6effb3/data/feature-table.biom -t /tmp/qiime2/uid=#1000/data/6072f42f-3907-4d92-92b9-4aa4ed243298/data/tree.nwk -m unweighted -o /tmp/qiime2/uid=#1000/processes/117-1767895527.17@uid=#1000/tmp/q2-OutPath-hibawjnf
+
+Running external command line application. This may print messages to stdout and/or stderr.
+The command being run is below. This command cannot be manually re-run as it will depend on temporary files that no longer exist.
+
+Command:
+
+ssu -i /tmp/qiime2/uid=#1000/data/2efbbe19-ae23-4d24-a539-fdbddd6effb3/data/feature-table.biom -t /tmp/qiime2/uid=#1000/data/6072f42f-3907-4d92-92b9-4aa4ed243298/data/tree.nwk -m weighted_unnormalized -o /tmp/qiime2/uid=#1000/processes/117-1767895527.17@uid=#1000/tmp/q2-OutPath-u866nq_d
+
+Saved FeatureTable[Frequency] to: diversity_core/rarefied_table.qza
+Saved SampleData[AlphaDiversity] to: diversity_core/faith_pd_vector.qza
+Saved SampleData[AlphaDiversity] to: diversity_core/observed_features_vector.qza
+Saved SampleData[AlphaDiversity] to: diversity_core/shannon_vector.qza
+Saved SampleData[AlphaDiversity] to: diversity_core/evenness_vector.qza
+Saved DistanceMatrix to: diversity_core/unweighted_unifrac_distance_matrix.qza
+Saved DistanceMatrix to: diversity_core/weighted_unifrac_distance_matrix.qza
+Saved DistanceMatrix to: diversity_core/jaccard_distance_matrix.qza
+Saved DistanceMatrix to: diversity_core/bray_curtis_distance_matrix.qza
+Saved PCoAResults to: diversity_core/unweighted_unifrac_pcoa_results.qza
+Saved PCoAResults to: diversity_core/weighted_unifrac_pcoa_results.qza
+Saved PCoAResults to: diversity_core/jaccard_pcoa_results.qza
+Saved PCoAResults to: diversity_core/bray_curtis_pcoa_results.qza
+Saved Visualization to: diversity_core/unweighted_unifrac_emperor.qzv
+Saved Visualization to: diversity_core/weighted_unifrac_emperor.qzv
+Saved Visualization to: diversity_core/jaccard_emperor.qzv
+Saved Visualization to: diversity_core/bray_curtis_emperor.qzv

@@ -1,0 +1,5 @@
+eventID	sop	target_gene	target_subfragment	lib_layout	pcr_primer_name_forward	pcr_primer_name_reverse	pcr_primer_forward	pcr_primer_reverse	env_broad_scale	env_local_scale	env_medium
+sampleID_1	https://nf-co.re/ampliseq	SSU rRNA	""	paired	""	""	GTGYCAGCMGCCGCGGTAA	GGACTACNVGGGTWTCTAAT	""	""	""
+sampleID_1a	https://nf-co.re/ampliseq	SSU rRNA	""	paired	""	""	GTGYCAGCMGCCGCGGTAA	GGACTACNVGGGTWTCTAAT	""	""	""
+sampleID_2	https://nf-co.re/ampliseq	SSU rRNA	""	paired	""	""	GTGYCAGCMGCCGCGGTAA	GGACTACNVGGGTWTCTAAT	""	""	""
+sampleID_2a	https://nf-co.re/ampliseq	SSU rRNA	""	paired	""	""	GTGYCAGCMGCCGCGGTAA	GGACTACNVGGGTWTCTAAT	""	""	""

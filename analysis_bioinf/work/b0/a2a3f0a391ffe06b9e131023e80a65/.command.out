@@ -1,0 +1,14 @@
+Saved FeatureTable[Frequency] to: lvl3-mix8.qza
+Exported lvl3-mix8.qza as BIOMV210DirFmt to directory exported/
+R version 4.3.3 (2024-02-29) 
+Running external command line application(s). This may print messages to stdout and/or stderr.
+The command(s) being run are below. These commands cannot be manually re-run as they will depend on temporary files that no longer exist.
+
+Command: run_ancombc.R --inp_abundances_path /tmp/tmp8i0we2oo/input.biom.tsv --inp_metadata_path /tmp/tmp8i0we2oo/input.map.txt --md_column_types {"treatment1": "categorical", "bad3": "categorical", "bad4": "categorical", "bad5": "numeric", "num6": "numeric", "num7": "numeric", "mix8": "categorical", "bad9": "categorical", "badpairwise10": "categorical", "materialSampleID": "categorical", "target_gene": "categorical"} --formula mix8 --p_adj_method holm --prv_cut 0.1 --lib_cut 500 --reference_levels ['mix8::2'] --tol 1e-05 --max_iter 100 --conserve True --alpha 0.05 --output_loaf /tmp/qiime2/uid=#1000/processes/667-1767895367.79@uid=#1000/tmp/q2-OutPath-itsz1_1c
+
+Saved FeatureData[DifferentialAbundance] to: lvl3-mix8.differentials.qza
+Exported lvl3-mix8.differentials.qza as DataLoafPackageDirFmt to directory differentials/Category-mix8-level-3
+Saved Visualization to: lvl3-mix8.differentials.qzv
+Exported lvl3-mix8.differentials.qzv as Visualization to directory differentials/Category-mix8-level-3
+Saved Visualization to: lvl3-mix8.da_barplot.qzv
+Exported lvl3-mix8.da_barplot.qzv as Visualization to directory da_barplot/Category-mix8-level-3

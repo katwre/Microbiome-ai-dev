@@ -1,0 +1,1 @@
+load_data(1,["Bacteria"],["index", "Bacteria"],[{"index":"b","Bacteria":2.0},{"index":"a","Bacteria":2.0}]);

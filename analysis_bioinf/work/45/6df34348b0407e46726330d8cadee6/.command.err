@@ -1,0 +1,9 @@
+Unable to find image 'quay.io/biocontainers/bioconductor-treesummarizedexperiment:2.10.0--r43hdfd78af_0' locally
+2.10.0--r43hdfd78af_0: Pulling from biocontainers/bioconductor-treesummarizedexperiment
+fa7e54f17dc0: Already exists
+4ca545ee6d5d: Already exists
+8f231515d207: Pulling fs layer
+8f231515d207: Download complete
+8f231515d207: Pull complete
+Digest: sha256:c22b31d28e96f502b87530ebcd8c9f1256d9c7d23ba08a3b2e083ad2ad22a407
+Status: Downloaded newer image for quay.io/biocontainers/bioconductor-treesummarizedexperiment:2.10.0--r43hdfd78af_0

@@ -1,0 +1,66 @@
+Unable to find image 'biocontainers/biocontainers:v1.2.0_cv1' locally
+v1.2.0_cv1: Pulling from biocontainers/biocontainers
+a4a2a29f9ba4: Pulling fs layer
+127c9761dcba: Pulling fs layer
+d13bf203e905: Pulling fs layer
+4039240d2e0b: Pulling fs layer
+cd9d8a5907de: Pulling fs layer
+866d6c399416: Pulling fs layer
+edd3bf038310: Pulling fs layer
+926449ce537b: Pulling fs layer
+90bae14c26aa: Pulling fs layer
+eadce7eb4091: Pulling fs layer
+000c5021555d: Pulling fs layer
+52d2b413fa58: Pulling fs layer
+9ce3805c05ff: Pulling fs layer
+55217f90a8ca: Pulling fs layer
+4039240d2e0b: Waiting
+cd9d8a5907de: Waiting
+926449ce537b: Waiting
+90bae14c26aa: Waiting
+866d6c399416: Waiting
+eadce7eb4091: Waiting
+000c5021555d: Waiting
+edd3bf038310: Waiting
+52d2b413fa58: Waiting
+9ce3805c05ff: Waiting
+55217f90a8ca: Waiting
+d13bf203e905: Download complete
+127c9761dcba: Verifying Checksum
+127c9761dcba: Download complete
+4039240d2e0b: Download complete
+a4a2a29f9ba4: Verifying Checksum
+a4a2a29f9ba4: Download complete
+cd9d8a5907de: Verifying Checksum
+cd9d8a5907de: Download complete
+a4a2a29f9ba4: Pull complete
+127c9761dcba: Pull complete
+d13bf203e905: Pull complete
+4039240d2e0b: Pull complete
+cd9d8a5907de: Pull complete
+926449ce537b: Download complete
+90bae14c26aa: Verifying Checksum
+90bae14c26aa: Download complete
+eadce7eb4091: Verifying Checksum
+eadce7eb4091: Download complete
+000c5021555d: Download complete
+52d2b413fa58: Verifying Checksum
+866d6c399416: Verifying Checksum
+866d6c399416: Download complete
+edd3bf038310: Verifying Checksum
+edd3bf038310: Download complete
+9ce3805c05ff: Verifying Checksum
+9ce3805c05ff: Download complete
+866d6c399416: Pull complete
+55217f90a8ca: Verifying Checksum
+55217f90a8ca: Download complete
+edd3bf038310: Pull complete
+926449ce537b: Pull complete
+90bae14c26aa: Pull complete
+eadce7eb4091: Pull complete
+000c5021555d: Pull complete
+52d2b413fa58: Pull complete
+9ce3805c05ff: Pull complete
+55217f90a8ca: Pull complete
+Digest: sha256:3332df09060b4336e26929bb505a598d36137ad46eeb331dcb8846ca5776ca6c
+Status: Downloaded newer image for biocontainers/biocontainers:v1.2.0_cv1
