@@ -70,6 +70,14 @@ const UploadForm = () => {
       newErrors.files = "Single-end sequencing requires exactly 1 FASTQ file";
     } else if (form.dataType === "paired-end" && form.files.length !== 2) {
       newErrors.files = "Paired-end sequencing requires exactly 2 FASTQ files (R1 and R2)";
+    } else if (form.dataType === "paired-end" && form.files.length === 2) {
+      // Check if we have both R1 and R2
+      const types = actualFiles.map(f => detectReadType(f.name));
+      const hasR1 = types.includes('R1');
+      const hasR2 = types.includes('R2');
+      if (!hasR1 || !hasR2) {
+        newErrors.files = "Paired-end files must include R1 (forward) and R2 (reverse) reads. Check your filenames contain _R1/_R2, _1/_2, or _F/_R.";
+      }
     }
 
     setErrors(newErrors);
@@ -91,7 +99,8 @@ const UploadForm = () => {
     setIsDragging(false);
     
     const droppedFiles = Array.from(e.dataTransfer.files);
-    const fileMetadata = droppedFiles.map((file) => ({
+    const sortedFiles = sortPairedFiles(droppedFiles);
+    const fileMetadata = sortedFiles.map((file) => ({
       name: file.name,
       size: file.size,
     }));
@@ -101,20 +110,21 @@ const UploadForm = () => {
       files: [...prev.files, ...fileMetadata],
     }));
     
-    setActualFiles(prev => [...prev, ...droppedFiles]);
+    setActualFiles(prev => [...prev, ...sortedFiles]);
     setErrors((prev) => ({ ...prev, files: undefined }));
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
+      const sortedFiles = sortPairedFiles(selectedFiles);
       
       setForm((prev) => ({
         ...prev,
-        files: [...prev.files, ...selectedFiles.map(f => ({ name: f.name, size: f.size }))],
+        files: [...prev.files, ...sortedFiles.map(f => ({ name: f.name, size: f.size }))],
       }));
       
-      setActualFiles(prev => [...prev, ...selectedFiles]);
+      setActualFiles(prev => [...prev, ...sortedFiles]);
       setErrors((prev) => ({ ...prev, files: undefined }));
     }
   };
@@ -131,6 +141,26 @@ const UploadForm = () => {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  const detectReadType = (filename: string): 'R1' | 'R2' | 'unknown' => {
+    const name = filename.toLowerCase();
+    // Check for R1/R2, _1/_2, _F/_R patterns
+    if (name.includes('_r1') || name.includes('_1') || name.includes('_f') || name.includes('_forward')) return 'R1';
+    if (name.includes('_r2') || name.includes('_2') || name.includes('_r') || name.includes('_reverse')) return 'R2';
+    return 'unknown';
+  };
+
+  const sortPairedFiles = (files: File[]): File[] => {
+    if (files.length !== 2) return files;
+    const sorted = [...files].sort((a, b) => {
+      const typeA = detectReadType(a.name);
+      const typeB = detectReadType(b.name);
+      if (typeA === 'R1' && typeB === 'R2') return -1;
+      if (typeA === 'R2' && typeB === 'R1') return 1;
+      return 0;
+    });
+    return sorted;
   };
 
   const generateJobId = () => {
@@ -364,31 +394,45 @@ const UploadForm = () => {
           {/* File List */}
           {form.files.length > 0 && (
             <div className="mt-3 space-y-2">
-              {form.files.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-primary" />
-                    <span className="truncate text-sm text-foreground">{file.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({formatFileSize(file.size)})
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFile(index);
-                    }}
-                    className="ml-2 flex-shrink-0 text-muted-foreground hover:text-destructive"
-                    aria-label={`Remove ${file.name}`}
+              {form.files.map((file, index) => {
+                const readType = actualFiles[index] ? detectReadType(actualFiles[index].name) : 'unknown';
+                const showBadge = form.dataType === "paired-end" && readType !== 'unknown';
+                
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <FileText className="h-4 w-4 flex-shrink-0 text-primary" />
+                      {showBadge && (
+                        <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                          readType === 'R1' 
+                            ? 'bg-blue-500/20 text-blue-700 dark:bg-blue-500/30 dark:text-blue-300' 
+                            : 'bg-green-500/20 text-green-700 dark:bg-green-500/30 dark:text-green-300'
+                        }`}>
+                          {readType}
+                        </span>
+                      )}
+                      <span className="truncate text-sm text-foreground">{file.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({formatFileSize(file.size)})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(index);
+                      }}
+                      className="ml-2 flex-shrink-0 text-muted-foreground hover:text-destructive"
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
