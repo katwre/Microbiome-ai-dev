@@ -18,6 +18,7 @@ interface FormState {
   dataType: "single-end" | "paired-end";
   files: UploadedFile[];
   sendEmail: boolean;
+  useTestData: boolean;
 }
 
 interface FormErrors {
@@ -39,6 +40,7 @@ const UploadForm = () => {
     dataType: "single-end",
     files: [],
     sendEmail: true,
+    useTestData: false,
   });
   const [actualFiles, setActualFiles] = useState<File[]>([]);
 
@@ -64,19 +66,22 @@ const UploadForm = () => {
       newErrors.email = "Please enter a valid email address";
     }
 
-    if (form.files.length === 0) {
-      newErrors.files = "Please upload at least one FASTQ file";
-    } else if (form.dataType === "single-end" && form.files.length !== 1) {
-      newErrors.files = "Single-end sequencing requires exactly 1 FASTQ file";
-    } else if (form.dataType === "paired-end" && form.files.length !== 2) {
-      newErrors.files = "Paired-end sequencing requires exactly 2 FASTQ files (R1 and R2)";
-    } else if (form.dataType === "paired-end" && form.files.length === 2) {
-      // Check if we have both R1 and R2
-      const types = actualFiles.map(f => detectReadType(f.name));
-      const hasR1 = types.includes('R1');
-      const hasR2 = types.includes('R2');
-      if (!hasR1 || !hasR2) {
-        newErrors.files = "Paired-end files must include R1 (forward) and R2 (reverse) reads. Check your filenames contain _R1/_R2, _1/_2, or _F/_R.";
+    // Skip file validation if using test data
+    if (!form.useTestData) {
+      if (form.files.length === 0) {
+        newErrors.files = "Please upload at least one FASTQ file";
+      } else if (form.dataType === "single-end" && form.files.length !== 1) {
+        newErrors.files = "Single-end sequencing requires exactly 1 FASTQ file";
+      } else if (form.dataType === "paired-end" && form.files.length !== 2) {
+        newErrors.files = "Paired-end sequencing requires exactly 2 FASTQ files (R1 and R2)";
+      } else if (form.dataType === "paired-end" && form.files.length === 2) {
+        // Check if we have both R1 and R2
+        const types = actualFiles.map(f => detectReadType(f.name));
+        const hasR1 = types.includes('R1');
+        const hasR2 = types.includes('R2');
+        if (!hasR1 || !hasR2) {
+          newErrors.files = "Paired-end files must include R1 (forward) and R2 (reverse) reads. Check your filenames contain _R1/_R2, _1/_2, or _F/_R.";
+        }
       }
     }
 
@@ -181,11 +186,14 @@ const UploadForm = () => {
       formData.append('email', form.email);
       formData.append('data_type', form.dataType);
       formData.append('send_email', form.sendEmail.toString());
+      formData.append('use_test_data', form.useTestData.toString());
       
-      // Add actual file objects from state
-      actualFiles.forEach(file => {
-        formData.append('files', file);
-      });
+      // Add actual file objects from state (only if not using test data)
+      if (!form.useTestData) {
+        actualFiles.forEach(file => {
+          formData.append('files', file);
+        });
+      }
 
       // Call Django API
       const response = await fetch('http://localhost:8000/api/jobs/upload/', {
@@ -220,6 +228,7 @@ const UploadForm = () => {
       dataType: "single-end",
       files: [],
       sendEmail: true,
+      useTestData: false,
     });
     setActualFiles([]);
     setErrors({});
@@ -353,10 +362,41 @@ const UploadForm = () => {
           </RadioGroup>
         </div>
 
+        {/* Test Data Option */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="use-test-data"
+              checked={form.useTestData}
+              onCheckedChange={(checked) => {
+                setForm((prev) => ({ 
+                  ...prev, 
+                  useTestData: checked as boolean,
+                  dataType: checked ? "paired-end" : prev.dataType,
+                  files: checked ? [] : prev.files
+                }));
+                if (checked) {
+                  setActualFiles([]);
+                  setErrors((prev) => ({ ...prev, files: undefined }));
+                }
+              }}
+            />
+            <Label htmlFor="use-test-data" className="cursor-pointer font-normal">
+              Use test data (nf-core demo files: 1a_S103_L001_R1/R2_001.fastq.gz)
+            </Label>
+          </div>
+          {form.useTestData && (
+            <p className="text-sm text-muted-foreground pl-6">
+              ✓ Test data will be used - no file upload needed. Analysis completes in ~5 minutes.
+            </p>
+          )}
+        </div>
+
         {/* File Upload */}
-        <div className="space-y-2">
-          <Label>Upload Files *</Label>
-          <div
+        {!form.useTestData && (
+          <div className="space-y-2">
+            <Label>Upload Files *</Label>
+            <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -436,6 +476,7 @@ const UploadForm = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Email Notification */}
         <div className="flex items-center space-x-2">

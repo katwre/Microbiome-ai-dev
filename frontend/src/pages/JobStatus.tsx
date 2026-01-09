@@ -232,7 +232,6 @@ const JobStatus = () => {
                   <p className="text-sm font-medium text-success mb-1">Analysis Complete!</p>
                   <p className="text-sm text-muted-foreground">
                     Your microbiome analysis has finished successfully.
-                    {job.result.execution_time && ` Completed in ${job.result.execution_time.toFixed(1)}s`}
                   </p>
                 </div>
 
@@ -240,15 +239,23 @@ const JobStatus = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {job.result.report_html && (
                     <Button variant="default" className="w-full" asChild>
-                      <a href={`http://localhost:8000${job.result.report_html}`} target="_blank" rel="noopener noreferrer">
+                      <a href={job.result.report_html} download>
                         <Download className="mr-2 h-4 w-4" />
-                        Download Report
+                        Download Full Report (HTML)
+                      </a>
+                    </Button>
+                  )}
+                  {job.result.taxonomy_plot && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <a href={job.result.taxonomy_plot} download>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Bacteria Plot (PNG)
                       </a>
                     </Button>
                   )}
                   {job.result.alpha_diversity_plot && (
                     <Button variant="outline" className="w-full" asChild>
-                      <a href={`http://localhost:8000${job.result.alpha_diversity_plot}`} target="_blank" rel="noopener noreferrer">
+                      <a href={job.result.alpha_diversity_plot} target="_blank" rel="noopener noreferrer">
                         <Download className="mr-2 h-4 w-4" />
                         Alpha Diversity Plot
                       </a>
@@ -256,17 +263,9 @@ const JobStatus = () => {
                   )}
                   {job.result.beta_diversity_plot && (
                     <Button variant="outline" className="w-full" asChild>
-                      <a href={`http://localhost:8000${job.result.beta_diversity_plot}`} target="_blank" rel="noopener noreferrer">
+                      <a href={job.result.beta_diversity_plot} target="_blank" rel="noopener noreferrer">
                         <Download className="mr-2 h-4 w-4" />
                         Beta Diversity Plot
-                      </a>
-                    </Button>
-                  )}
-                  {job.result.taxonomy_plot && (
-                    <Button variant="outline" className="w-full" asChild>
-                      <a href={`http://localhost:8000${job.result.taxonomy_plot}`} target="_blank" rel="noopener noreferrer">
-                        <Download className="mr-2 h-4 w-4" />
-                        Taxonomy Plot
                       </a>
                     </Button>
                   )}

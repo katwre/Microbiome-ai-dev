@@ -1,0 +1,10 @@
+# Nextflow parameters to reduce memory usage
+
+# Skip species-level taxonomy assignment (saves ~120GB memory)
+skip_dada_addspecies: true
+
+# Alternative: Use less memory-intensive taxonomy database
+# dada_ref_tax_custom: /path/to/smaller/reference.fasta
+
+# Reduce other resource-intensive steps
+dada_max_ee: 2,2  # More stringent filtering = fewer sequences = less memory

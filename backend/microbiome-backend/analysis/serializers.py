@@ -36,9 +36,21 @@ class UploadRequestSerializer(serializers.Serializer):
     """Serializer for file upload request"""
     project_name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
-    data_type = serializers.ChoiceField(choices=['single-end', 'paired-end'])
+    data_type = serializers.ChoiceField(choices=['single-end', 'paired-end'], required=False)
     send_email = serializers.BooleanField(default=True)
+    use_test_data = serializers.BooleanField(default=False, required=False)
     files = serializers.ListField(
         child=serializers.FileField(),
-        allow_empty=False
+        allow_empty=True,
+        required=False
     )
+    
+    def validate(self, data):
+        """Custom validation to check files are provided unless using test data"""
+        use_test_data = data.get('use_test_data', False)
+        files = data.get('files', [])
+        
+        if not use_test_data and not files:
+            raise serializers.ValidationError("Either provide files or select use_test_data")
+        
+        return data
