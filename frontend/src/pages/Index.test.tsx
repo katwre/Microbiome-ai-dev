@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest'
-import { BrowserRouter, useNavigate } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import Index from './Index'
 import { server } from '../test/mocks/server'
 import { http, HttpResponse } from 'msw'
@@ -8,13 +8,10 @@ import { API_ENDPOINTS } from '@/lib/api'
 
 // Mock the useNavigate hook
 const mockNavigate = vi.fn()
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  }
-})
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => children,
+  useNavigate: () => mockNavigate,
+}))
 
 beforeAll(() => server.listen())
 afterEach(() => {

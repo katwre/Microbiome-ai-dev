@@ -1,19 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest'
-import { BrowserRouter, useParams } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { http, HttpResponse } from 'msw'
 import JobStatus from './JobStatus'
 import { server, mockJob } from '../test/mocks/server'
 import { API_ENDPOINTS } from '@/lib/api'
 
 // Mock the useParams hook
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    useParams: () => ({ jobId: '550e8400-e29b-41d4-a716-446655440000' }),
-  }
-})
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => children,
+  useParams: () => ({ jobId: '550e8400-e29b-41d4-a716-446655440000' }),
+}))
 
 beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
