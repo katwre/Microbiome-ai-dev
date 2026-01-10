@@ -74,7 +74,7 @@ docker-compose up -d
 # Backend API: http://localhost:8000/api/
 ```
 
-### Try It Out
+**Try it out locally:**
 
 1. Open http://localhost
 2. Click "Start New Analysis"
@@ -82,6 +82,13 @@ docker-compose up -d
 4. Check "Use sample data for testing"
 5. Click "Run Analysis"
 6. Wait ~5-10 minutes for results
+
+
+### Cloud Deployment
+
+🌐 **Live Demo:** [**https://microbiome-frontend.onrender.com**](https://microbiome-frontend.onrender.com)
+
+> **⚠️ Note:** The live demo runs on Render's free tier and may be temporarily offline due to inactivity (15min sleep) or resource limitations. Alternatively, please run it locally using Docker.
 
 ---
 
