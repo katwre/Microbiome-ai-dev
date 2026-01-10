@@ -76,7 +76,7 @@ jobs:
     - name: Run tests
       run: |
         cd frontend
-        bun test --config vitest.config.ts
+        bun run test
     
     - name: Test Summary
       if: always()
