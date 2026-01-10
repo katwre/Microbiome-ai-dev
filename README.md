@@ -1,5 +1,7 @@
 # Microbiome Data Analysis
 
+![CI Status](https://github.com/katwre/Microbiome-ai-dev/actions/workflows/ci.yml/badge.svg)
+
 <p align="center">
   <img src="./img/poster.png" alt="Logo" width="500">
 </p>
@@ -16,7 +18,7 @@ Microbiome analysis using 16S rRNA sequencing identifies which bacteria are pres
 
 **Bioinformatics:**
 
-🧬 Nextflow 25.10.2 • nf-core/ampliseq • DADA2 • Cutadapt • Conda/Mamba
+🧬 Nextflow • nf-core/ampliseq 25.10.2 • DADA2 • Cutadapt • Conda/Mamba
 
 **Data & Analysis:**
 
@@ -81,6 +83,8 @@ Complete error chain: Nextflow → Django logs → Database → REST API → Fro
 - Status polling every 5 seconds during execution
 - Error details displayed in frontend with troubleshooting tips
 
+**Testing**
+[TBD] pinpoint to backendTESTING.md
 
 
 ## Deployment
