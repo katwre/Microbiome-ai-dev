@@ -4,13 +4,15 @@
 
 ## Overview
 
-This project uses **GitHub Actions** for Continuous Integration (CI) to automatically run tests on every push and pull request.
+This project uses **GitHub Actions** for full **CI/CD** (Continuous Integration & Continuous Deployment):
+- ✅ **CI**: Automatically runs 42 tests on every push
+- ✅ **CD**: Automatically deploys to Render when tests pass on `main` branch
 
 ## Current Setup
 
 ### ✅ Continuous Integration (CI)
 
-**Workflow File:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
+**Workflow File:** [.github/workflows/ci.yml](../.github/workflows/ci.yml)
 
 **Triggers:**
 - Push to `main` or `develop` branches
@@ -36,18 +38,50 @@ This project uses **GitHub Actions** for Continuous Integration (CI) to automati
 - **Runtime:** ~3 seconds
 - **Node Version:** Uses Bun (latest)
 
-### CI Pipeline Flow
+### ✅ Continuous Deployment (CD)
+
+**Triggers:**
+- Only on pushes to `main` branch
+- Only when all tests pass
+- Pull requests do NOT trigger deployment
+
+**Deploy Targets:**
+- Backend: Render (microbiome-backend)
+- Frontend: Render (microbiome-frontend)
+
+**Deploy Method:**
+- Uses Render Deploy Hooks
+- Triggers via curl POST requests
+- Deployment runs on Render (not in GitHub Actions)
+- Takes ~5-10 minutes
+
+**Configuration:**
+- Deploy hooks stored in GitHub Secrets
+- `RENDER_DEPLOY_HOOK_BACKEND`
+- `RENDER_DEPLOY_HOOK_FRONTEND`
+
+### Full CI/CD Pipeline Flow
 
 ```mermaid
 graph LR
-    A[Push/PR] --> B[Checkout Code]
-    B --> C[Backend Tests]
-    B --> D[Frontend Tests]
-    C --> E{All Pass?}
-    D --> E
-    E -->|Yes| F[✅ Success]
-    E -->|No| G[❌ Failure]
+    A[Push to main] --> B[Run Tests]
+    B --> C{Tests Pass?}
+    C -->|Yes| D[Deploy Backend]
+    C -->|No| E[❌ Stop]
+    D --> F[Deploy Frontend]
+    F --> G[✅ Live on Render]
 ```
+
+### Detailed Flow
+
+1. **Developer pushes code** to `main` branch
+2. **GitHub Actions triggered** automatically
+3. **Backend tests run** (25 tests, ~30 sec)
+4. **Frontend tests run** (17 tests, ~20 sec)
+5. **If all pass** → Trigger Render deployment
+6. **Render builds** new Docker images
+7. **Render deploys** new version (5-10 min)
+8. **Live URLs updated** automatically
 
 ### Test Results
 
@@ -57,7 +91,65 @@ Frontend: 17/17 tests passing ✅
 Total:    42/42 tests passing ✅
 ```
 
-## Viewing CI Results
+## Setup CD (One-Time Configuration)
+
+### Get Render Deploy Hooks
+
+1. **Go to Render Dashboard**: https://dashboard.render.com
+2. **For Backend Service:**
+   - Click "microbiome-backend"
+   - Go to "Settings" tab
+   - Scroll to "Deploy Hook" section
+   - Click "Create Deploy Hook"
+   - Copy the URL (looks like `https://api.render.com/deploy/srv-xxxxx?key=xxxxx`)
+
+3. **For Frontend Service:**
+   - Click "microbiome-frontend"
+   - Go to "Settings" tab
+   - Scroll to "Deploy Hook" section
+   - Click "Create Deploy Hook"
+   - Copy the URL
+
+### Add Secrets to GitHub
+
+1. **Go to your GitHub repository**
+2. **Settings** → **Secrets and variables** → **Actions**
+3. **Click "New repository secret"**
+4. **Add Backend Hook:**
+   - Name: `RENDER_DEPLOY_HOOK_BACKEND`
+   - Value: (paste backend deploy hook URL)
+   - Click "Add secret"
+
+5. **Add Frontend Hook:**
+   - Name: `RENDER_DEPLOY_HOOK_FRONTEND`
+   - Value: (paste frontend deploy hook URL)
+   - Click "Add secret"
+
+### Test the Setup
+
+1. **Make a small change** (e.g., update README)
+2. **Commit and push to main:**
+   ```bash
+   git add .
+   git commit -m "test: Trigger CD pipeline"
+   git push origin main
+   ```
+3. **Watch GitHub Actions** - Should see:
+   - ✅ Backend tests pass
+   - ✅ Frontend tests pass
+   - ✅ Deploy job runs
+   - ✅ Render builds new version
+
+4. **Check Render Dashboard** - Should see deployment in progress
+
+### Verify Deployment
+
+After ~5-10 minutes:
+- Visit your frontend URL
+- Check if changes are live
+- Verify backend API responds
+
+## Viewing CI/CD Results
 
 ### On GitHub
 1. Go to your repository on GitHub
