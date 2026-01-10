@@ -9,6 +9,7 @@ import { API_ENDPOINTS } from '@/lib/api'
 // Mock the useParams hook
 vi.mock('react-router-dom', () => ({
   BrowserRouter: ({ children }: { children: React.ReactNode }) => children,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
   useParams: () => ({ jobId: '550e8400-e29b-41d4-a716-446655440000' }),
 }))
 
