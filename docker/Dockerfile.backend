@@ -1,0 +1,54 @@
+FROM python:3.12-slim
+
+# Install system dependencies (Java comes with Nextflow via conda)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    libpq-dev \
+    curl \
+    wget \
+    bzip2 \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Miniforge (includes conda and mamba)
+RUN wget --progress=dot:giga https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O miniforge.sh && \
+    bash miniforge.sh -b -p /opt/conda && \
+    rm miniforge.sh && \
+    /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda config --set always_yes yes && \
+    /opt/conda/bin/conda clean -afy
+
+# Install Nextflow via conda
+RUN /opt/conda/bin/mamba install -c bioconda nextflow -y && \
+    /opt/conda/bin/conda clean -afy
+
+# Add conda to PATH
+ENV PATH="/opt/conda/bin:${PATH}"
+
+WORKDIR /app
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy Django application
+COPY . .
+
+# Create media directory for file uploads
+RUN mkdir -p media/uploads media/results database
+
+# Collect static files
+RUN python manage.py collectstatic --noinput || true
+
+# Create a non-root user to run the application
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app /opt/conda /home/appuser
+
+USER appuser
+
+EXPOSE 8000
+
+# Run migrations and start server
+CMD python manage.py migrate && \
+    gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 300 mysite.wsgi:application

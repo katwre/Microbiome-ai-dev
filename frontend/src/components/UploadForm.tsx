@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { API_ENDPOINTS } from "@/lib/api";
 
 interface UploadedFile {
   name: string;
@@ -196,7 +197,7 @@ const UploadForm = () => {
       }
 
       // Call Django API
-      const response = await fetch('http://localhost:8000/api/jobs/upload/', {
+      const response = await fetch(API_ENDPOINTS.JOBS_UPLOAD, {
         method: 'POST',
         body: formData,
       });

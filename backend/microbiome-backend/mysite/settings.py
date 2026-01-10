@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,7 +82,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / 'database' / 'db.sqlite3',
+        'NAME': BASE_DIR / 'database' / 'db.sqlite3',
     }
 }
 
@@ -121,10 +122,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (User uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Allow overriding MEDIA_ROOT for Docker-in-Docker Nextflow compatibility
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', str(BASE_DIR / 'media'))
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
@@ -132,9 +135,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:8080",  # Alternative Vite port
     "http://127.0.0.1:8080",
+    "http://localhost",  # Docker nginx frontend
+    "http://127.0.0.1",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Configuration for Docker deployment
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:5173",
+    "http://localhost:8080",
+]
 
 # REST Framework Configuration
 REST_FRAMEWORK = {

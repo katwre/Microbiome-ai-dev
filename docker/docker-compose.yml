@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend/microbiome-backend
+      dockerfile: ../../docker/Dockerfile.backend
+    container_name: microbiome-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount media directory
+      - ${MEDIA_HOST_PATH:-/home/katwre/projects/Microbiome-ai-dev/backend/microbiome-backend/media}:${MEDIA_HOST_PATH:-/home/katwre/projects/Microbiome-ai-dev/backend/microbiome-backend/media}
+      - ../analysis_bioinf:/app/analysis_bioinf
+      - ../database:/app/database
+      # Nextflow cache - bind mount or named volume depending on environment
+      - ${NEXTFLOW_CACHE_PATH:-nextflow-assets}:/home/appuser/.nextflow
+      # Conda environments for pipeline tools
+      - ${CONDA_ENVS_PATH:-conda-envs}:/opt/conda/envs
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///db.sqlite3}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - MEDIA_ROOT=${MEDIA_HOST_PATH:-/home/katwre/projects/Microbiome-ai-dev/backend/microbiome-backend/media}
+      - NXF_HOME=/home/appuser/.nextflow
+      - NXF_OPTS=${NXF_OPTS:--Xms512M -Xmx2G}
+    networks:
+      - microbiome-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: microbiome-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - microbiome-network
+    restart: unless-stopped
+
+  # Optional: Nextflow pipeline runner (for cloud deployments)
+  # pipeline:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.pipeline
+  #   container_name: microbiome-pipeline
+  #   volumes:
+  #     - ../backend/microbiome-backend/media:/data
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - microbiome-network
+
+networks:
+  microbiome-network:
+    driver: bridge
+
+volumes:
+  media_data:
+  db_data:
+  nextflow-assets:  # Volume for Nextflow pipeline cache
+  conda-envs:  # Volume for conda environments used by pipeline

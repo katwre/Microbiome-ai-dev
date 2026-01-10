@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { API_ENDPOINTS } from "@/lib/api";
 
 interface JobData {
   job_id: string;
@@ -38,7 +39,7 @@ const JobStatus = () => {
 
   const fetchJobStatus = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/jobs/${jobId}/`);
+      const response = await fetch(API_ENDPOINTS.JOB_DETAIL(jobId!));
       
       if (!response.ok) {
         throw new Error("Job not found");

@@ -18,6 +18,7 @@ class AnalysisJob(models.Model):
     data_type = models.CharField(max_length=20, choices=[('single-end', 'Single-end'), ('paired-end', 'Paired-end')])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     send_email = models.BooleanField(default=True)
+    is_test_data = models.BooleanField(default=False)  # Track if using test data
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

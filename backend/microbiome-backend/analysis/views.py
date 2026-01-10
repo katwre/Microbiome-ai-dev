@@ -72,38 +72,73 @@ def run_nextflow_analysis(job_id):
         results_dir = job_dir / 'results'
         results_dir.mkdir(exist_ok=True)
         
-        # Prepare Nextflow command with local testing constraints
+        # Prepare Nextflow command
         cmd = [
             'nextflow', 'run', 'nf-core/ampliseq',
+            '-r', '2.15.0',  # Latest stable version
+            '-resume',  # Resume from previous failed runs
             '--input', str(samplesheet_path),
             '--outdir', str(results_dir),
             '--FW_primer', 'GTGYCAGCMGCCGCGGTAA',
             '--RV_primer', 'GGACTACNVGGGTWTCTAAT',
-            '-profile', 'docker',
-            '--skip_fastqc',  # Skip FastQC - QC reporting
-            '--skip_barrnap',  # Skip SSU annotation
-            '--skip_barplot',  # Skip visualization
-            '--skip_abundance_tables',  # Skip relative abundance tables
-            '--skip_alpha_rarefaction',  # Skip diversity analysis
-            '--skip_diversity_indices',  # Skip alpha/beta diversity
-            '--skip_ancom',  # Skip differential abundance testing
-            '--skip_multiqc',  # Skip summary report
-            '--max_cpus', '3',  # Limit CPUs to 3
-            '--max_memory', '6.GB',  # Increased from 4GB to allow some overhead
+            '--dada_ref_taxonomy', 'gtdb',  # Specify reference database explicitly
         ]
+        
+        # For test data, skip optional steps to speed up analysis
+        if job.is_test_data:
+            logger.info(f"Using test data mode - skipping optional analysis steps")
+            cmd.extend([
+                '--skip_fastqc',  # Skip FastQC - QC reporting
+                '--skip_barrnap',  # Skip SSU annotation
+                #'--skip_barplot',  # Skip visualization
+                '--skip_abundance_tables',  # Skip relative abundance tables
+                '--skip_alpha_rarefaction',  # Skip diversity analysis
+                '--skip_diversity_indices',  # Skip alpha/beta diversity
+                '--skip_ancom',  # Skip differential abundance testing
+                '--skip_multiqc',  # Skip summary report
+                '--max_cpus', '3',  # Limit CPUs to 3
+                '--max_memory', '6.GB',  # Conservative memory limit
+            ])
+        else:
+            logger.info(f"Using real user data mode - running full analysis pipeline")
+            # For real user data, run full pipeline with appropriate resources
+            cmd.extend([
+                '--max_cpus', '8',  # More CPUs for real analysis
+                '--max_memory', '16.GB',  # More memory for real analysis
+            ])
         
         # Check if running locally (detect by checking available memory)
         # If running on laptop/local machine, add strict memory limits
         try:
             import psutil
             available_gb = psutil.virtual_memory().available / (1024**3)
-            if available_gb < 40:  # Less than 40GB = likely local machine
+            if available_gb < 35:  # Less than 35GB = likely local machine
                 logger.info(f"Local testing mode detected ({available_gb:.1f}GB available)")
                 # Add custom config to limit process memory and CPUs
                 config_file = job_dir / 'custom.config'
                 with open(config_file, 'w') as f:
                     f.write("""
+// Allow overwriting of existing report files
+timeline.overwrite = true
+report.overwrite = true
+trace.overwrite = true
+dag.overwrite = true
+
+// Disable Docker and Singularity, use Conda only
+docker.enabled = false
+singularity.enabled = false
+apptainer.enabled = false
+
+// Conda configuration
+conda {
+    enabled = true
+    useMamba = true
+}
+
+// Force local execution without containers
 process {
+    executor = 'local'
+    container = null
     withName: 'CUTADAPT_BASIC' {
         memory = 4.GB
         cpus = 4
@@ -145,12 +180,17 @@ process {
         
         logger.info(f"Running command: {' '.join(cmd)}")
         
+        # Set environment variables for Nextflow
+        env = os.environ.copy()
+        env['NXF_ANSI_LOG'] = 'false'  # Disable ANSI colors in logs
+        
         # Run Nextflow
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
             cwd=str(job_dir),
+            env=env,
             timeout=3600  # 1 hour timeout
         )
         
@@ -171,7 +211,7 @@ process {
                 from django.core.files import File
                 
                 # Run the bacteria composition script
-                script_path = Path(settings.BASE_DIR).parent.parent / 'create_bacteria_barplot.py'
+                script_path = Path(settings.BASE_DIR).parent.parent / 'analysis_bioinf' / 'create_bacteria_barplot.py'
                 if script_path.exists():
                     logger.info(f"Generating bacteria composition plot...")
                     plot_result = subprocess.run(
@@ -277,17 +317,24 @@ class AnalysisJobViewSet(viewsets.ModelViewSet):
             email=data['email'],
             data_type=data.get('data_type', 'paired-end'),
             send_email=data.get('send_email', True),
+            is_test_data=use_test_data,
             status='pending'
         )
         
         # Handle test data or uploaded files
         if use_test_data:
-            # Path to test data
-            test_data_dir = os.path.join(settings.BASE_DIR.parent.parent, 'analysis_bioinf', 'test_input')
+            # Path to test data - handle both local and Docker paths
+            test_data_dir = os.path.join(settings.BASE_DIR, 'analysis_bioinf', 'test_input')
+            if not os.path.exists(test_data_dir):
+                # Fallback to parent directory structure (local development)
+                test_data_dir = os.path.join(settings.BASE_DIR.parent.parent, 'analysis_bioinf', 'test_input')
+            
             test_files = [
                 '1a_S103_L001_R1_001.fastq.gz',
                 '1a_S103_L001_R2_001.fastq.gz'
             ]
+            
+            logger.info(f"Looking for test data in: {test_data_dir}")
             
             # Create job directory in media
             job_dir = os.path.join(settings.MEDIA_ROOT, 'uploads', str(job.job_id))
@@ -310,6 +357,9 @@ class AnalysisJobViewSet(viewsets.ModelViewSet):
                         file_name=filename,
                         file_size=file_size
                     )
+                    logger.info(f"Copied test file: {filename}")
+                else:
+                    logger.error(f"Test file not found: {src_path}")
         else:
             # Save uploaded files
             files = request.FILES.getlist('files')
