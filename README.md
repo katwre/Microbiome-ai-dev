@@ -10,8 +10,6 @@ It's a web-based application that allows users to upload microbiome sequencing d
 
 Microbiome analysis using 16S rRNA sequencing identifies which bacteria are present in your sample by reading a specific genetic "barcode" that all bacteria have. The sequencing machine reads millions of these DNA barcodes, and specialized software groups them into different bacterial species and measures how abundant each one is. This tells you the diversity of your microbial community - which bacteria are present, how many different types there are, and which ones dominate.
 
-> **⚠️ Note:** The [live demo](https://microbiome-frontend.onrender.com) runs on Render's free tier and may be temporarily offline due to inactivity (15min sleep) or resource limitations. Alternatively, please run it locally using Docker.
-
 
 ## Tech Stack
 
