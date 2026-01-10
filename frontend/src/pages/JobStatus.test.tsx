@@ -7,8 +7,8 @@ import { server, mockJob } from '../test/mocks/server'
 import { API_ENDPOINTS } from '@/lib/api'
 
 // Mock the useParams hook
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal()
   return {
     ...actual,
     useParams: () => ({ jobId: '550e8400-e29b-41d4-a716-446655440000' }),
