@@ -35,6 +35,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy Django application
 COPY backend/microbiome-backend/ .
 
+# Copy test data for demo purposes (Django expects it in analysis_bioinf/test_input)
+RUN mkdir -p analysis_bioinf/test_input
+COPY analysis_bioinf/test_input/ analysis_bioinf/test_input/
+
 # Create media directory for file uploads
 RUN mkdir -p media/uploads media/results database
 
