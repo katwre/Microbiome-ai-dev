@@ -29,11 +29,11 @@ ENV PATH="/opt/conda/bin:${PATH}"
 WORKDIR /app
 
 # Copy and install Python dependencies
-COPY requirements.txt .
+COPY backend/microbiome-backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy Django application
-COPY . .
+COPY backend/microbiome-backend/ .
 
 # Create media directory for file uploads
 RUN mkdir -p media/uploads media/results database

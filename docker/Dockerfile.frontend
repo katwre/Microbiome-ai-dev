@@ -3,7 +3,7 @@ FROM node:20-alpine as build
 WORKDIR /app
 
 # Copy package files
-COPY frontend/package*.json frontend/bun.lockb ./
+COPY frontend/package*.json frontend/bun.lockb* ./
 
 # Install dependencies
 RUN npm install
