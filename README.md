@@ -3,12 +3,15 @@
 ![CI Status](https://github.com/katwre/Microbiome-ai-dev/actions/workflows/ci.yml/badge.svg)
 
 <p align="center">
-  <img src="./img/poster.png" alt="Logo" width="500">
+  <img src="./img/poster1.png" alt="Logo" width="500">
 </p>
 
-It's web-based application that allows users to upload microbiome sequencing data (such as 16S rRNA gene sequencing), perform basic data analysis, and generate visualizations of the microbiome diversity.
+It's a web-based application that allows users to upload microbiome sequencing data (such as 16S rRNA gene sequencing), perform basic data analysis, and generate visualizations of the microbiome diversity.
 
 Microbiome analysis using 16S rRNA sequencing identifies which bacteria are present in your sample by reading a specific genetic "barcode" that all bacteria have. The sequencing machine reads millions of these DNA barcodes, and specialized software groups them into different bacterial species and measures how abundant each one is. This tells you the diversity of your microbial community - which bacteria are present, how many different types there are, and which ones dominate.
+
+> **⚠️ Note:** The [live demo](https://microbiome-frontend.onrender.com) runs on Render's free tier and may be temporarily offline due to inactivity (15min sleep) or resource limitations. Alternatively, please run it locally using Docker.
+
 
 ## Tech Stack
 
@@ -28,304 +31,365 @@ Microbiome analysis using 16S rRNA sequencing identifies which bacteria are pres
 
 🐳 Docker • Docker Compose
 
-☁️ AWS EC2 • AWS S3 • AWS Batch
+☁️ Render
 
 **CI/CD:**
 
 🔄 GitHub Actions
 
-**Workflow & Orchestration:**
+**Frontend:** 
 
-🔗 n8n • MCP
+✨ Vibe-coded with Lovable: React 18 • TypeScript • Vite • shadcn-ui • Tailwind CSS
 
-**Frontend:** vibe-coded using Lovable - Vite, TypeScript, React, shadcn-ui, Tailwind CSS.
+---
 
+## Features
 
---- 
+- 🧬 **16S rRNA Sequencing Analysis** - Upload FASTQ files for bacterial identification
+- 🧪 **Test Data Mode** - Try the pipeline with built-in sample data
+- 📊 **Interactive Visualizations** - View taxonomy composition and diversity metrics
+- 🔄 **Real-time Status Updates** - Track analysis progress live
+- 📈 **Comprehensive Reports** - Get detailed HTML reports with all results
+- 🐳 **Dockerized Deployment** - Easy local development and production deployment
+- ✅ **Automated Testing** - 42 tests (25 backend + 17 frontend) with CI/CD
+- ☁️ **Cloud-Ready** - Deploy to AWS, Render, or Railway
 
+---
 
-## Backend
+## Quick Start
 
-**API Endpoints**
+### Local Development
 
-- `POST /api/jobs/upload/` - Upload FASTQ files or use test data
-  - Parameters: project_name, email, data_type (paired-end/single-end), files (optional), use_test_data (boolean)
-  - Returns: job_id, status
-- `GET /api/jobs/{job_id}/status/` - Check analysis status and retrieve results
-  - Returns: status (pending/running/completed/failed), results, error_details, report_url
+```bash
+# Clone repository
+git clone https://github.com/katwre/Microbiome-ai-dev.git
+cd Microbiome-ai-dev
 
-**Database Models**
+# Start with Docker Compose
+cd docker
+docker-compose up -d
 
-Django SQLite models:
+# Access application
+# Frontend: http://localhost
+# Backend API: http://localhost:8000/api/
+```
 
-- **AnalysisJob**: Tracks pipeline execution
-  - Fields: job_id (UUID), project_name, email, status, created_at, updated_at, is_test_data, error_message
-  - Relationships: OneToOne with AnalysisResults
-- **AnalysisResults**: Stores pipeline outputs
-  - Fields: asv_count, reads_input, reads_filtered, diversity_metrics, barplot_path, report_generated_at
+### Try It Out
+
+1. Open http://localhost
+2. Click "Start New Analysis"
+3. Fill in project details
+4. Check "Use sample data for testing"
+5. Click "Run Analysis"
+6. Wait ~5-10 minutes for results
+
+---
+
+## Documentation
+
+### Architecture
+
+**Backend** - [Backend Documentation](backend/microbiome-backend/README.md)
+- REST API with Django & Django REST Framework
+- PostgreSQL (production) / SQLite (development)
+- Comprehensive test suite (25 tests)
+
+**Backend** - [Backend Documentation](backend/microbiome-backend/README.md)
+- REST API with Django & Django REST Framework
+- PostgreSQL (production) / SQLite (development)
+- Comprehensive test suite (25 tests)
+
+**Frontend** - [Frontend Documentation](frontend/README.md)
+- React SPA with TypeScript
+- Component library: shadcn-ui
+- Testing with Vitest (17 tests)
 
 **Bioinformatics Pipeline**
+- Nextflow workflow engine
+- nf-core/ampliseq v2.15.0
+- DADA2 for ASV calling
+- GTDB taxonomic classification
 
-- **Workflow engine**: Nextflow 25.10.2
-- **Pipeline**: nf-core/ampliseq v2.15.0
-- **Tool management**: Conda/Mamba (not Docker containers)
-- **Analysis steps**:
-  1. Primer trimming (cutadapt)
-  2. Quality filtering & denoising (DADA2)
-  3. Chimera removal
-  4. Taxonomic classification (GTDB database)
-  5. Diversity analysis & visualization
+**Testing** - [Testing Guide](backend/microbiome-backend/TESTING.md)
+- 42 total tests (100% passing)
+- Unit tests for models and API
+- Integration tests for workflows
+- CI pipeline with GitHub Actions
 
-**Error Handling**
+**Deployment**
+- [Render Deployment Guide](deployment/RENDER_DEPLOYMENT.md) - Quick cloud deployment
+- [CI/CD Documentation](ci_cd/README.md) - Automated testing and deployment
 
-Complete error chain: Nextflow → Django logs → Database → REST API → Frontend UI
-- Nextflow failures captured with .exitcode and .nextflow.log
-- Status polling every 5 seconds during execution
-- Error details displayed in frontend with troubleshooting tips
+---
 
-**Testing**
-[TBD] pinpoint to backendTESTING.md
+## API Reference
 
+### Endpoints
 
-## Deployment
+**Create Analysis Job**
+```http
+POST /api/jobs/upload/
+Content-Type: multipart/form-data
 
-### Local Development (Docker Compose)
+Parameters:
+- project_name: string (required)
+- email: string (required)
+- data_type: "paired-end" | "single-end" (required)
+- files: File[] (optional if use_test_data=true)
+- use_test_data: boolean (default: false)
+- send_email: boolean (default: true)
 
-**1. Setup and Build**
+Response:
+{
+  "job_id": "uuid",
+  "status": "pending",
+  "message": "Job created successfully"
+}
+```
+
+**Get Job Status**
+```http
+GET /api/jobs/{job_id}/status/
+
+Response:
+{
+  "job_id": "uuid",
+  "status": "pending" | "processing" | "completed" | "failed",
+  "created_at": "timestamp",
+  "updated_at": "timestamp",
+  "completed_at": "timestamp | null",
+  "error_message": "string | null"
+}
+```
+
+**Get Job Details**
+```http
+GET /api/jobs/{job_id}/
+
+Response:
+{
+  "job_id": "uuid",
+  "project_name": "string",
+  "email": "string",
+  "status": "string",
+  "files": [...],
+  "result": {...}
+}
+```
+
+**Get Analysis Results**
+```http
+GET /api/jobs/{job_id}/results/
+
+Response:
+{
+  "report_html": "url",
+  "taxonomy_plot": "url",
+  "alpha_diversity_plot": "url",
+  "beta_diversity_plot": "url",
+  "execution_time": number
+}
+```
+
+**Get Bacteria Composition**
+```http
+GET /api/jobs/{job_id}/bacteria/
+
+Response:
+[
+  {
+    "genus": "Lactobacillus",
+    "family": "Lactobacillaceae",
+    "phylum": "Firmicutes",
+    "total_reads": 15234
+  },
+  ...
+]
+```
+
+---
+
+## Development
+
+### Project Structure
+
+```
+Microbiome-ai-dev/
+├── backend/microbiome-backend/     # Django backend
+│   ├── analysis/                   # Analysis app
+│   ├── mysite/                     # Django settings
+│   ├── tests.py                    # Test suite
+│   └── README.md                   # Backend docs
+├── frontend/                       # React frontend
+│   ├── src/                        # Source code
+│   ├── tests/                      # Test files
+│   └── README.md                   # Frontend docs
+├── docker/                         # Docker configs
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+├── .github/workflows/              # CI/CD pipeline
+│   └── ci.yml                      # GitHub Actions
+├── deployment/                     # Deployment guides
+└── ci_cd/                          # CI/CD documentation
+```
+
+### Running Tests
+
+**Backend Tests (25 tests)**
+```bash
+cd backend/microbiome-backend
+python manage.py test
+```
+
+**Frontend Tests (17 tests)**
+```bash
+cd frontend
+bun test
+```
+
+**All Tests in CI**
+```bash
+# Automatically run on every push
+# View results: GitHub Actions tab
+```
+
+### Local Development Workflow
+
+1. **Make changes** to backend or frontend code
+2. **Run tests locally** to verify
+3. **Commit and push** to GitHub
+4. **CI runs automatically** - tests must pass
+5. **Deploy** (manual via Render dashboard or automatic with CD)
+
+---
+
+## Deployment Options
+
+### Option 1: Render (Recommended for Quick Deploy)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com)
+
+- Free tier available
+- PostgreSQL included
+- Auto-deploy from GitHub
+- [Full Guide](deployment/RENDER_DEPLOYMENT.md)
+
+### Option 2: Docker (Local/Self-Hosted)
+
 ```bash
 cd docker
-cp .env.example .env
-docker-compose build
 docker-compose up -d
 ```
 
-**2. Access Application**
-- Frontend: http://localhost
-- Backend API: http://localhost:8000/api/
+- Complete control
+- No external dependencies
+- Perfect for testing
 
-**3. Run Analysis**
-- Open http://localhost
-- Fill in project details
-- Upload FASTQ files OR check "Use test data"
-- Click "Run analysis"
-- First run: 10-15 minutes (conda creates environments)
-- Subsequent runs: ~5 minutes (cached)
+### Option 3: AWS (Production-Grade)
 
-**4. Monitor & Debug**
-```bash
-# View logs
-docker-compose logs -f backend
+- EC2 for backend
+- S3 for storage
+- Batch for pipeline execution
+- See detailed AWS guide in README
 
-# Check container status
-docker-compose ps
+---
 
-# Restart backend after code changes
-docker-compose build backend
-docker-compose restart backend
-```
+## Testing
 
-**5. Testing via API**
-```bash
-# Upload test job
-curl -X POST http://localhost:8000/api/jobs/upload/ \
-  -F "project_name=Test" \
-  -F "email=test@example.com" \
-  -F "data_type=paired-end" \
-  -F "use_test_data=true"
+### Test Coverage
 
-# Check status (replace with actual job_id from response)
-curl http://localhost:8000/api/jobs/<job_id>/status/
-```
+- ✅ **Backend:** 25 tests (Models, API, Integration)
+- ✅ **Frontend:** 17 tests (Components, Pages, Utils)
+- ✅ **Total:** 42 tests, 100% passing
 
-**6. Cleanup**
-```bash
-# Stop containers
-docker-compose down
+### Test Types
 
-# Remove volumes (deletes all data)
-docker-compose down -v
-```
+**Unit Tests**
+- Model creation and validation
+- API endpoint functionality
+- Utility functions
 
+**Integration Tests**
+- Complete workflow: upload → process → results
+- Database interactions
+- Job isolation and concurrency
 
-### AWS Production Deployment
+**CI Pipeline**
+- Runs on every push
+- Must pass before merge
+- [View CI Status](https://github.com/katwre/Microbiome-ai-dev/actions)
 
-**Architecture Overview**
-```
-┌─────────────────┐
-│   CloudFront    │ ← CDN for frontend
-│   + S3 Bucket   │   (Static React build)
-└────────┬────────┘
-         │ HTTPS
-         ▼
-┌─────────────────┐
-│   EC2 Instance  │ ← Django API + nginx
-│   (or ECS)      │   (Backend container)
-└────────┬────────┘
-         │ Submit job
-         ▼
-┌─────────────────┐
-│   AWS Batch     │ ← Run Nextflow pipeline
-│   + ECS         │   (nf-core/ampliseq)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│   S3 Buckets    │ ← Uploads + Results
-└─────────────────┘
-         ▲
-         │ Metadata
-┌────────┴────────┐
-│   RDS Postgres  │ ← Job status + results
-└─────────────────┘
-```
+---
 
-**📋 Prerequisites**
-- AWS Account with admin access
-- AWS CLI configured
-- Docker installed locally
-- Domain name (optional but recommended)
+## Bioinformatics Pipeline
 
-**🚀 Deployment Steps**
+### Workflow Steps
 
-**Step 1: Prepare Your Code**
-```bash
-# Install production dependencies
-cd backend/microbiome-backend
-cat requirements-prod.txt >> requirements.txt
+1. **Quality Control** - FastQC on raw reads
+2. **Primer Trimming** - Cutadapt removes primers
+3. **Denoising** - DADA2 infers ASVs
+4. **Chimera Removal** - Filter chimeric sequences
+5. **Taxonomy Assignment** - GTDB database classification
+6. **Diversity Analysis** - Alpha & beta diversity metrics
+7. **Visualization** - Generate plots and reports
 
-# Generate secret key
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+### Pipeline Parameters
 
-# Set up production settings
-export DJANGO_SETTINGS_MODULE=mysite.settings_prod
-```
+- Default: Paired-end Illumina data
+- Customizable via Nextflow config
+- Supports single-end mode
+- Configurable quality thresholds
 
-**Step 2: Create AWS Infrastructure**
+### Output Files
 
-See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for detailed steps.
+- `ASV_table.tsv` - Abundance matrix
+- `ASV_tax.gtdb.tsv` - Taxonomic assignments
+- `report.html` - MultiQC summary
+- Diversity plots (PNG/PDF)
 
-Quick setup:
-```bash
-# Create S3 buckets
-aws s3 mb s3://microbiome-uploads-prod
-aws s3 mb s3://microbiome-results-prod
-aws s3 mb s3://microbiome-frontend-prod
+---
 
-# Configure S3 CORS
-aws s3api put-bucket-cors \
-  --bucket microbiome-uploads-prod \
-  --cors-configuration file://docker/s3-cors.json
+## Contributing
 
-# Create RDS database
-aws rds create-db-instance \
-  --db-instance-identifier microbiome-db \
-  --db-instance-class db.t4g.micro \
-  --engine postgres \
-  --allocated-storage 20 \
-  --master-username admin \
-  --master-user-password $(openssl rand -base64 32)
+Contributions are welcome! Please:
 
-# Create ECR repositories
-aws ecr create-repository --repository-name microbiome-backend
-aws ecr create-repository --repository-name microbiome-nextflow
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Ensure all tests pass
+6. Submit a pull request
 
-**Step 3: Setup AWS Batch**
-```bash
-# Create compute environment
-aws batch create-compute-environment \
-  --compute-environment-name microbiome-compute \
-  --type MANAGED \
-  --compute-resources type=EC2,minvCpus=0,maxvCpus=16,instanceTypes=optimal
+---
 
-# Create job queue
-aws batch create-job-queue \
-  --job-queue-name microbiome-queue \
-  --compute-environment-order order=1,computeEnvironment=microbiome-compute
+## License
 
-# Register job definition
-aws batch register-job-definition \
-  --job-definition-name nextflow-ampliseq \
-  --type container \
-  --container-properties file://batch-job-definition.json
-```
+This project is open source and available under the MIT License.
 
-**Step 4: Deploy Backend to EC2**
-```bash
-# Launch EC2 instance (t3.medium recommended)
-# Then use deployment script
-chmod +x scripts/deploy-to-ec2.sh
-./scripts/deploy-to-ec2.sh your-ec2-ip
+---
 
-# SSH to EC2 and configure
-ssh ec2-user@your-ec2-ip
-cd /opt/microbiome-ai/docker
-cp .env.production.example .env
-vim .env  # Add actual values
-docker-compose up -d
-```
+## Acknowledgments
 
-**Step 5: Deploy Frontend**
-```bash
-# Build frontend
-cd frontend
-npm install
-npm run build
+- **nf-core/ampliseq** - Nextflow pipeline
+- **DADA2** - ASV inference algorithm
+- **GTDB** - Taxonomic database
+- **Lovable** - Frontend scaffolding
 
-# Update API endpoint in .env.production
-echo "VITE_API_URL=https://api.yourdomain.com" > .env.production
+---
 
-# Deploy to S3
-aws s3 sync dist/ s3://microbiome-frontend-prod
+## Contact
 
-# Create CloudFront distribution (via AWS Console or CLI)
-# Point to S3 bucket, enable HTTPS
-```
+For questions or support, please open an issue on GitHub.
 
-**Step 6: Configure Domain & SSL**
-```bash
-# Request SSL certificate (AWS Certificate Manager)
-aws acm request-certificate \
-  --domain-name yourdomain.com \
-  --domain-name api.yourdomain.com \
-  --validation-method DNS
+---
 
-# Configure Route 53 DNS:
-# api.yourdomain.com → EC2 Elastic IP
-# yourdomain.com → CloudFront distribution
-```
+## Links
 
-**💰 Estimated Monthly Costs**
-- EC2 t3.medium: ~$30
-- RDS db.t4g.micro: ~$15  
-- S3 storage (50GB): ~$1
-- Data transfer: ~$5-10
-- Batch compute (on-demand): ~$10-30
-- **Total: $60-90/month**
-
-**📊 Monitoring**
-```bash
-# View backend logs
-ssh ec2-user@your-ec2-ip
-docker logs -f microbiome-backend
-
-# Monitor Batch jobs
-aws batch describe-jobs --jobs job-id
-
-# CloudWatch dashboard
-# Create alarms for errors, high CPU, failed jobs
-```
-
-**🔒 Security Checklist**
-- [ ] Change SECRET_KEY in production
-- [ ] Set DEBUG=False
-- [ ] Configure security groups (only 80/443/22)
-- [ ] Enable HTTPS redirect
-- [ ] Use IAM roles (no hardcoded AWS keys)
-- [ ] Enable RDS encryption
-- [ ] Regular backups enabled
-- [ ] CloudWatch logging configured
-
-**📖 Full Documentation**
-See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for complete step-by-step guide.
+- [Live Demo](https://microbiome-frontend.onrender.com) (if deployed)
+- [Backend API Docs](backend/microbiome-backend/README.md)
+- [Frontend Docs](frontend/README.md)
+- [Testing Guide](backend/microbiome-backend/TESTING.md)
+- [Deployment Guide](deployment/RENDER_DEPLOYMENT.md)
+- [CI/CD Documentation](ci_cd/README.md)
 
