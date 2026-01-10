@@ -143,173 +143,185 @@ docker-compose down -v
 ```
 
 
-### In the cloud
+### AWS Production Deployment
 
-```bash
-┌─────────────┐
-│   Frontend  │ (S3 + CloudFront)
-│   React     │
-└──────┬──────┘
-       │ HTTP POST /api/jobs/upload/
-       ▼
+**Architecture Overview**
+```
 ┌─────────────────┐
-│  API Gateway +  │ ← Handle uploads, create jobs
-│  Lambda         │   (Django API in Lambda container)
-└──────┬──────────┘
-       │ Trigger
-       ▼
+│   CloudFront    │ ← CDN for frontend
+│   + S3 Bucket   │   (Static React build)
+└────────┬────────┘
+         │ HTTPS
+         ▼
+┌─────────────────┐
+│   EC2 Instance  │ ← Django API + nginx
+│   (or ECS)      │   (Backend container)
+└────────┬────────┘
+         │ Submit job
+         ▼
 ┌─────────────────┐
 │   AWS Batch     │ ← Run Nextflow pipeline
-│   (or ECS)      │   (Docker image with Nextflow + nf-core)
-└──────┬──────────┘
-       │ Write results
-       ▼
+│   + ECS         │   (nf-core/ampliseq)
+└────────┬────────┘
+         │
+         ▼
 ┌─────────────────┐
-│   S3 Bucket     │ ← Store FASTQ inputs + results
+│   S3 Buckets    │ ← Uploads + Results
 └─────────────────┘
-       ▲
-       │ Poll for status
-┌──────┴──────────┐
-│   RDS/DynamoDB  │ ← Job metadata, status
+         ▲
+         │ Metadata
+┌────────┴────────┐
+│   RDS Postgres  │ ← Job status + results
 └─────────────────┘
 ```
 
-**AWS Setup**
+**📋 Prerequisites**
+- AWS Account with admin access
+- AWS CLI configured
+- Docker installed locally
+- Domain name (optional but recommended)
 
+**🚀 Deployment Steps**
 
-Set enviroment variables via .env file
+**Step 1: Prepare Your Code**
 ```bash
-# On AWS, copy the AWS template
-cp .env.aws.example .env
-# Edit with actual AWS paths and secrets
-vim .env
-docker-compose up -d
+# Install production dependencies
+cd backend/microbiome-backend
+cat requirements-prod.txt >> requirements.txt
+
+# Generate secret key
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+# Set up production settings
+export DJANGO_SETTINGS_MODULE=mysite.settings_prod
 ```
 
+**Step 2: Create AWS Infrastructure**
 
-1. Push Docker Images to ECR
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for detailed steps.
 
+Quick setup:
 ```bash
-# Login to AWS ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+# Create S3 buckets
+aws s3 mb s3://microbiome-uploads-prod
+aws s3 mb s3://microbiome-results-prod
+aws s3 mb s3://microbiome-frontend-prod
 
-# Create repositories
-aws ecr create-repository --repository-name microbiome-django
-aws ecr create-repository --repository-name microbiome-nextflow
+# Configure S3 CORS
+aws s3api put-bucket-cors \
+  --bucket microbiome-uploads-prod \
+  --cors-configuration file://docker/s3-cors.json
 
-# Build and push
-docker tag microbiome-django <account-id>.dkr.ecr.us-east-1.amazonaws.com/microbiome-django:latest
-docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/microbiome-django:latest
-```
-
-2. Create S3 Buckets
-```bash
-# Input files
-aws s3 mb s3://microbiome-uploads
-
-# Results
-aws s3 mb s3://microbiome-results
-```
-
-3. Setup RDS Database
-```bash
-# Create PostgreSQL instance
+# Create RDS database
 aws rds create-db-instance \
   --db-instance-identifier microbiome-db \
   --db-instance-class db.t4g.micro \
   --engine postgres \
   --allocated-storage 20 \
   --master-username admin \
-  --master-user-password <password>
+  --master-user-password $(openssl rand -base64 32)
+
+# Create ECR repositories
+aws ecr create-repository --repository-name microbiome-backend
+aws ecr create-repository --repository-name microbiome-nextflow
 ```
 
-4. Deploy:
+**Step 3: Setup AWS Batch**
 ```bash
-sam build
-sam deploy --guided
-```
-
-5. Setup AWS Batch
-
-
-Create Compute Environment:
-```bash
+# Create compute environment
 aws batch create-compute-environment \
   --compute-environment-name microbiome-compute \
   --type MANAGED \
-  --state ENABLED \
-  --compute-resources type=EC2,minvCpus=0,maxvCpus=4,instanceTypes=optimal
-```
+  --compute-resources type=EC2,minvCpus=0,maxvCpus=16,instanceTypes=optimal
 
-Create Job Queue:
-```bash
+# Create job queue
 aws batch create-job-queue \
   --job-queue-name microbiome-queue \
-  --state ENABLED \
-  --priority 1 \
   --compute-environment-order order=1,computeEnvironment=microbiome-compute
-```
 
-Create Job Definition:
-```bash
+# Register job definition
 aws batch register-job-definition \
   --job-definition-name nextflow-ampliseq \
   --type container \
-  --container-properties '{
-    "image": "<account-id>.dkr.ecr.us-east-1.amazonaws.com/microbiome-nextflow:latest",
-    "vcpus": 2,
-    "memory": 4096,
-    "jobRoleArn": "arn:aws:iam::<account-id>:role/BatchJobRole"
-  }'
+  --container-properties file://batch-job-definition.json
 ```
 
-
-6. Update Django to Trigger Batch
-
-
-7. Create Batch Job Completion Handler
-
-Connect with EventBridge:
+**Step 4: Deploy Backend to EC2**
 ```bash
-aws events put-rule \
-  --name batch-job-state-change \
-  --event-pattern '{"source":["aws.batch"],"detail-type":["Batch Job State Change"]}'
+# Launch EC2 instance (t3.medium recommended)
+# Then use deployment script
+chmod +x scripts/deploy-to-ec2.sh
+./scripts/deploy-to-ec2.sh your-ec2-ip
 
-aws events put-targets \
-  --rule batch-job-state-change \
-  --targets "Id"="1","Arn"="arn:aws:lambda:...:function:batch-handler"
+# SSH to EC2 and configure
+ssh ec2-user@your-ec2-ip
+cd /opt/microbiome-ai/docker
+cp .env.production.example .env
+vim .env  # Add actual values
+docker-compose up -d
 ```
 
-
-8. Frontend Deployment
+**Step 5: Deploy Frontend**
 ```bash
 # Build frontend
 cd frontend
+npm install
 npm run build
 
-# Deploy to S3 + CloudFront
-aws s3 sync dist/ s3://microbiome-frontend
-aws cloudfront create-distribution --origin-domain-name microbiome-frontend.s3.amazonaws.com
+# Update API endpoint in .env.production
+echo "VITE_API_URL=https://api.yourdomain.com" > .env.production
+
+# Deploy to S3
+aws s3 sync dist/ s3://microbiome-frontend-prod
+
+# Create CloudFront distribution (via AWS Console or CLI)
+# Point to S3 bucket, enable HTTPS
 ```
 
+**Step 6: Configure Domain & SSL**
+```bash
+# Request SSL certificate (AWS Certificate Manager)
+aws acm request-certificate \
+  --domain-name yourdomain.com \
+  --domain-name api.yourdomain.com \
+  --validation-method DNS
 
+# Configure Route 53 DNS:
+# api.yourdomain.com → EC2 Elastic IP
+# yourdomain.com → CloudFront distribution
+```
 
-----
+**💰 Estimated Monthly Costs**
+- EC2 t3.medium: ~$30
+- RDS db.t4g.micro: ~$15  
+- S3 storage (50GB): ~$1
+- Data transfer: ~$5-10
+- Batch compute (on-demand): ~$10-30
+- **Total: $60-90/month**
 
-Notes:
+**📊 Monitoring**
+```bash
+# View backend logs
+ssh ec2-user@your-ec2-ip
+docker logs -f microbiome-backend
 
-Lovable: https://lovable.dev/projects/d97b168e-ebbe-4151-84f8-11e62661fc2a
-https://github.com/katwre/microbiome-insights-builder
+# Monitor Batch jobs
+aws batch describe-jobs --jobs job-id
 
-A concrete OpenAPI definition that clearly documents how the frontend and backend communicate, and that the backend actually follows.
+# CloudWatch dashboard
+# Create alarms for errors, high CPU, failed jobs
+```
 
-A practical data flow
-- Django/SQLite: receives upload, creates job_id, stores metadata
-- n8n: orchestration glue (webhooks, retries, notifications)
-- MCP: a thin “tool façade” that exposes Run Nextflow pipeline as a callable tool
-- Nextflow: executes the actual bioinformatics workflow in containers and writes outputs
-- DuckDB: stores analysis-ready tables derived from Nextflow outputs
-- Django: queries DuckDB and serves plots
+**🔒 Security Checklist**
+- [ ] Change SECRET_KEY in production
+- [ ] Set DEBUG=False
+- [ ] Configure security groups (only 80/443/22)
+- [ ] Enable HTTPS redirect
+- [ ] Use IAM roles (no hardcoded AWS keys)
+- [ ] Enable RDS encryption
+- [ ] Regular backups enabled
+- [ ] CloudWatch logging configured
 
+**📖 Full Documentation**
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for complete step-by-step guide.
 
-DuckDB competes mainly with Pandas + ad-hoc CSV parsing, not with core genomics formats

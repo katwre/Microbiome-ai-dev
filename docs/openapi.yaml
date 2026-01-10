@@ -1,0 +1,617 @@
+openapi: 3.0.3
+info:
+  title: Microbiome Data Analysis API
+  description: |
+    REST API for microbiome sequencing data analysis using nf-core/ampliseq pipeline.
+    
+    ## Features
+    - Upload FASTQ files (single-end or paired-end)
+    - Run amplicon sequencing analysis pipeline
+    - Retrieve bacteria composition and diversity metrics
+    - Track job status in real-time
+    
+    ## Workflow
+    1. **Upload** - Submit FASTQ files via `/api/jobs/upload/`
+    2. **Monitor** - Check status via `/api/jobs/{job_id}/status/`
+    3. **Results** - Retrieve analysis results when completed
+    4. **Bacteria** - Get detailed bacteria composition
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@microbiome-analysis.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: http://localhost
+    description: Docker development server
+  - url: https://api.yourdomain.com
+    description: Production server (AWS)
+
+tags:
+  - name: Jobs
+    description: Analysis job management
+  - name: Results
+    description: Analysis results and data retrieval
+
+paths:
+  /api/jobs/upload/:
+    post:
+      tags:
+        - Jobs
+      summary: Upload files and create analysis job
+      description: |
+        Submit microbiome sequencing data for analysis. Accepts FASTQ files or uses test data.
+        
+        **Supported formats:**
+        - `.fastq`, `.fastq.gz`
+        - Single-end or paired-end reads
+        
+        **Test data:**
+        Set `use_test_data: true` to run analysis with built-in test samples (faster for demos).
+      operationId: uploadJob
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - project_name
+                - email
+                - data_type
+              properties:
+                project_name:
+                  type: string
+                  description: Name for this analysis project
+                  example: "Soil Sample Analysis 2024"
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  description: Email address for notifications
+                  example: "researcher@university.edu"
+                data_type:
+                  type: string
+                  enum: [single-end, paired-end]
+                  description: Type of sequencing data
+                  example: "paired-end"
+                send_email:
+                  type: boolean
+                  description: Send email notification when analysis completes
+                  default: true
+                use_test_data:
+                  type: boolean
+                  description: Use built-in test data instead of uploading files
+                  default: false
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: FASTQ files to upload (required if use_test_data is false)
+                  minItems: 1
+                  maxItems: 2
+            examples:
+              withFiles:
+                summary: Upload actual FASTQ files
+                value:
+                  project_name: "Marine Microbiome Study"
+                  email: "researcher@ocean.edu"
+                  data_type: "paired-end"
+                  send_email: true
+                  use_test_data: false
+              testData:
+                summary: Use test data
+                value:
+                  project_name: "Test Run"
+                  email: "test@example.com"
+                  data_type: "paired-end"
+                  use_test_data: true
+                  
+      responses:
+        '201':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisJob'
+              examples:
+                success:
+                  value:
+                    job_id: "550e8400-e29b-41d4-a716-446655440000"
+                    project_name: "Soil Sample Analysis 2024"
+                    email: "researcher@university.edu"
+                    data_type: "paired-end"
+                    status: "pending"
+                    send_email: true
+                    is_test_data: false
+                    created_at: "2024-01-10T12:00:00Z"
+                    updated_at: "2024-01-10T12:00:00Z"
+                    completed_at: null
+                    error_message: null
+                    files: [
+                      {
+                        file_name: "sample_R1.fastq.gz",
+                        file_size: 1048576,
+                        uploaded_at: "2024-01-10T12:00:00Z"
+                      },
+                      {
+                        file_name: "sample_R2.fastq.gz",
+                        file_size: 1048576,
+                        uploaded_at: "2024-01-10T12:00:00Z"
+                      }
+                    ]
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: "Missing required fields"
+                    details:
+                      project_name: ["This field is required."]
+                invalidEmail:
+                  value:
+                    error: "Invalid email format"
+                noFiles:
+                  value:
+                    error: "Files are required when use_test_data is false"
+
+  /api/jobs/{job_id}/status/:
+    get:
+      tags:
+        - Jobs
+      summary: Get job status
+      description: |
+        Check the current status of an analysis job.
+        
+        **Status values:**
+        - `pending` - Job queued, not started
+        - `processing` - Analysis running
+        - `completed` - Successfully finished
+        - `failed` - Analysis failed (check error_message)
+      operationId: getJobStatus
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: Unique job identifier (UUID)
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [pending, processing, completed, failed]
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+                  completed_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  error_message:
+                    type: string
+                    nullable: true
+              examples:
+                processing:
+                  value:
+                    job_id: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "processing"
+                    created_at: "2024-01-10T12:00:00Z"
+                    updated_at: "2024-01-10T12:05:00Z"
+                    completed_at: null
+                    error_message: null
+                completed:
+                  value:
+                    job_id: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "completed"
+                    created_at: "2024-01-10T12:00:00Z"
+                    updated_at: "2024-01-10T12:15:00Z"
+                    completed_at: "2024-01-10T12:15:00Z"
+                    error_message: null
+                failed:
+                  value:
+                    job_id: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "failed"
+                    created_at: "2024-01-10T12:00:00Z"
+                    updated_at: "2024-01-10T12:10:00Z"
+                    completed_at: null
+                    error_message: "Nextflow pipeline failed: Invalid input format"
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Job not found"
+                detail: "No job exists with the provided ID"
+
+  /api/jobs/{job_id}/:
+    get:
+      tags:
+        - Jobs
+      summary: Get complete job details
+      description: Retrieve full job information including files and results
+      operationId: getJob
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisJobDetailed'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/jobs/{job_id}/results/:
+    get:
+      tags:
+        - Results
+      summary: Get analysis results
+      description: |
+        Retrieve complete analysis results for a completed job.
+        
+        **Includes:**
+        - Download URLs for HTML report
+        - Visualization plots (taxonomy, diversity)
+        - Data files (TSV format)
+        - Metadata and statistics
+      operationId: getJobResults
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Results retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+              example:
+                report_html: "https://api.yourdomain.com/media/results/2024/01/10/report.html"
+                alpha_diversity_plot: "https://api.yourdomain.com/media/results/2024/01/10/alpha_diversity.png"
+                beta_diversity_plot: "https://api.yourdomain.com/media/results/2024/01/10/beta_diversity.png"
+                taxonomy_plot: "https://api.yourdomain.com/media/results/2024/01/10/bacteria_composition.png"
+                alpha_diversity_data: "https://api.yourdomain.com/media/results/2024/01/10/alpha_diversity.tsv"
+                beta_diversity_data: "https://api.yourdomain.com/media/results/2024/01/10/beta_diversity.tsv"
+                taxonomy_data: "https://api.yourdomain.com/media/results/2024/01/10/bacteria_summary.tsv"
+                asv_count: 150
+                reads_input: 50000
+                reads_filtered: 45000
+                diversity_metrics:
+                  shannon: 4.2
+                  simpson: 0.85
+                  observed_species: 150
+                generated_at: "2024-01-10T12:15:00Z"
+        '400':
+          description: Analysis not completed yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Analysis not completed yet"
+                detail: "Current status: processing"
+        '404':
+          description: Results not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/jobs/{job_id}/bacteria/:
+    get:
+      tags:
+        - Results
+      summary: Get bacteria composition
+      description: |
+        Retrieve detailed bacteria composition data for a completed analysis.
+        
+        **Returns:**
+        - List of bacteria by genus
+        - Taxonomic classification (family, phylum)
+        - Read counts for each bacteria
+        - Sorted by abundance (most to least)
+      operationId: getBacteriaComposition
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Bacteria data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bacteria:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bacteria'
+                  total_count:
+                    type: integer
+                    description: Total number of bacteria taxa found
+              example:
+                bacteria:
+                  - genus: "Pseudomonas"
+                    family: "Pseudomonadaceae"
+                    phylum: "Proteobacteria"
+                    total_reads: 12450
+                  - genus: "Streptomyces"
+                    family: "Streptomycetaceae"
+                    phylum: "Actinobacteria"
+                    total_reads: 8920
+                  - genus: "Bacillus"
+                    family: "Bacillaceae"
+                    phylum: "Firmicutes"
+                    total_reads: 7105
+                total_count: 45
+        '400':
+          description: Analysis not completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No bacteria data available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Failed to read bacteria data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    AnalysisJob:
+      type: object
+      description: Microbiome analysis job
+      required:
+        - job_id
+        - project_name
+        - email
+        - data_type
+        - status
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Unique job identifier
+          readOnly: true
+        project_name:
+          type: string
+          maxLength: 255
+          description: Human-readable project name
+        email:
+          type: string
+          format: email
+          description: Email for notifications
+        data_type:
+          type: string
+          enum: [single-end, paired-end]
+          description: Sequencing data type
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: Current job status
+          readOnly: true
+        send_email:
+          type: boolean
+          default: true
+          description: Whether to send email notifications
+        is_test_data:
+          type: boolean
+          default: false
+          description: Whether using test data
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        error_message:
+          type: string
+          nullable: true
+          description: Error details if job failed
+          readOnly: true
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadedFile'
+          readOnly: true
+
+    AnalysisJobDetailed:
+      allOf:
+        - $ref: '#/components/schemas/AnalysisJob'
+        - type: object
+          properties:
+            result:
+              $ref: '#/components/schemas/AnalysisResult'
+              nullable: true
+
+    UploadedFile:
+      type: object
+      description: Uploaded FASTQ file
+      properties:
+        file_name:
+          type: string
+          description: Original filename
+          example: "sample_R1.fastq.gz"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+          example: 1048576
+        uploaded_at:
+          type: string
+          format: date-time
+
+    AnalysisResult:
+      type: object
+      description: Complete analysis results
+      properties:
+        report_html:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to interactive HTML report
+        alpha_diversity_plot:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to alpha diversity visualization
+        beta_diversity_plot:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to beta diversity visualization
+        taxonomy_plot:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to bacteria composition barplot
+        alpha_diversity_data:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to alpha diversity data (TSV)
+        beta_diversity_data:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to beta diversity data (TSV)
+        taxonomy_data:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to bacteria summary data (TSV)
+        asv_count:
+          type: integer
+          nullable: true
+          description: Number of Amplicon Sequence Variants (ASVs)
+        reads_input:
+          type: integer
+          nullable: true
+          description: Total input reads
+        reads_filtered:
+          type: integer
+          nullable: true
+          description: Reads after quality filtering
+        diversity_metrics:
+          type: object
+          nullable: true
+          description: Diversity indices
+          additionalProperties: true
+        generated_at:
+          type: string
+          format: date-time
+
+    Bacteria:
+      type: object
+      description: Bacterial taxon with read counts
+      required:
+        - genus
+        - family
+        - phylum
+        - total_reads
+      properties:
+        genus:
+          type: string
+          description: Genus name
+          example: "Pseudomonas"
+        family:
+          type: string
+          description: Family name
+          example: "Pseudomonadaceae"
+        phylum:
+          type: string
+          description: Phylum name
+          example: "Proteobacteria"
+        total_reads:
+          type: integer
+          format: int64
+          description: Total read count for this bacteria
+          example: 12450
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message
+        detail:
+          type: string
+          description: Additional error details
+        details:
+          type: object
+          description: Validation errors by field
+          additionalProperties: true
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        JWT token authentication (optional, for production).
+        Include in header: `Authorization: Bearer <token>`
+
+security: []  # No authentication required by default (development)
+# For production, uncomment:
+# security:
+#   - bearerAuth: []

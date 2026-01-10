@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { CheckCircle2, Clock, XCircle, Loader2, ArrowLeft, Download, FileText } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, ArrowLeft, Download, FileText, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { API_ENDPOINTS } from "@/lib/api";
+
+interface BacteriaData {
+  genus: string;
+  family: string;
+  phylum: string;
+  total_reads: number;
+}
 
 interface JobData {
   job_id: string;
@@ -33,6 +40,9 @@ interface JobData {
 
 const JobStatus = () => {
   const { jobId } = useParams<{ jobId: string }>();
+  const [bacteria, setBacteria] = useState<BacteriaData[]>([]);
+  const [showBacteria, setShowBacteria] = useState(false);
+  const [loadingBacteria, setLoadingBacteria] = useState(false);
   const [job, setJob] = useState<JobData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +62,28 @@ const JobStatus = () => {
       setError(err instanceof Error ? err.message : "Failed to fetch job status");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBacteriaData = async () => {
+    if (!jobId) return;
+    
+    setLoadingBacteria(true);
+    try {
+      const response = await fetch(API_ENDPOINTS.JOB_BACTERIA(jobId));
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch bacteria data");
+      }
+      
+      const data = await response.json();
+      setBacteria(data.bacteria || []);
+      setShowBacteria(true);
+    } catch (err) {
+      console.error("Error fetching bacteria:", err);
+      setShowBacteria(false);
+    } finally {
+      setLoadingBacteria(false);
     }
   };
 
@@ -237,7 +269,7 @@ const JobStatus = () => {
                 </div>
 
                 {/* Download Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   {job.result.report_html && (
                     <Button variant="default" className="w-full" asChild>
                       <a href={job.result.report_html} download>
@@ -271,6 +303,79 @@ const JobStatus = () => {
                     </Button>
                   )}
                 </div>
+
+                {/* View Bacteria Button */}
+                <div className="mb-4">
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                      if (showBacteria) {
+                        setShowBacteria(false);
+                      } else {
+                        fetchBacteriaData();
+                      }
+                    }}
+                    disabled={loadingBacteria}
+                  >
+                    {loadingBacteria ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading bacteria data...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-2 h-4 w-4" />
+                        {showBacteria ? "Hide" : "View"} Bacteria in Sample
+                        {showBacteria ? (
+                          <ChevronUp className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        )}
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Bacteria Table */}
+                {showBacteria && bacteria.length > 0 && (
+                  <div className="border border-border rounded-lg overflow-hidden">
+                    <div className="bg-muted px-4 py-3 border-b border-border">
+                      <h4 className="font-semibold text-sm">
+                        Bacteria Found ({bacteria.length} total)
+                      </h4>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50 sticky top-0">
+                          <tr>
+                            <th className="text-left px-4 py-2 font-medium">#</th>
+                            <th className="text-left px-4 py-2 font-medium">Genus</th>
+                            <th className="text-left px-4 py-2 font-medium">Family</th>
+                            <th className="text-left px-4 py-2 font-medium">Phylum</th>
+                            <th className="text-right px-4 py-2 font-medium">Reads</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {bacteria.map((item, index) => (
+                            <tr
+                              key={index}
+                              className="border-t border-border hover:bg-muted/30 transition-colors"
+                            >
+                              <td className="px-4 py-2 text-muted-foreground">{index + 1}</td>
+                              <td className="px-4 py-2 font-medium">{item.genus}</td>
+                              <td className="px-4 py-2 text-muted-foreground">{item.family}</td>
+                              <td className="px-4 py-2 text-muted-foreground">{item.phylum}</td>
+                              <td className="px-4 py-2 text-right font-mono">
+                                {item.total_reads.toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </Card>

@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   JOB_DETAIL: (jobId: string) => `${API_BASE_URL}/api/jobs/${jobId}/`,
   JOB_STATUS: (jobId: string) => `${API_BASE_URL}/api/jobs/${jobId}/status/`,
   JOB_RESULTS: (jobId: string) => `${API_BASE_URL}/api/jobs/${jobId}/results/`,
+  JOB_BACTERIA: (jobId: string) => `${API_BASE_URL}/api/jobs/${jobId}/bacteria/`,
 };
 
 export { API_BASE_URL };

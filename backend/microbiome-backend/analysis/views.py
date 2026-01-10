@@ -253,6 +253,18 @@ process {
                     )
                 logger.info(f"Bacteria composition plot saved")
             
+            # Save bacteria summary TSV if generated
+            bacteria_summary_path = results_dir / 'bacteria_summary.tsv'
+            if bacteria_summary_path.exists():
+                with open(bacteria_summary_path, 'rb') as f:
+                    from django.core.files import File
+                    result_obj.taxonomy_data.save(
+                        f'bacteria_summary_{job_id}.tsv',
+                        File(f),
+                        save=False
+                    )
+                logger.info(f"Bacteria summary data saved")
+            
             # Save execution info
             result_obj.execution_time = result.stdout.count('Completed')  # Simple metric
             result_obj.save()
@@ -419,4 +431,91 @@ class AnalysisJobViewSet(viewsets.ModelViewSet):
             return Response(
                 {'error': 'No results found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=True, methods=['get'], url_path='bacteria')
+    def get_bacteria(self, request, job_id=None):
+        """
+        Get bacteria composition data from taxonomy summary
+        GET /api/jobs/{job_id}/bacteria/
+        """
+        job = self.get_object()
+        
+        if job.status != 'completed':
+            return Response(
+                {'error': 'Analysis not completed yet'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            result = job.result
+            
+            # Try to use taxonomy_data if available
+            taxonomy_file = None
+            if result.taxonomy_data:
+                taxonomy_file = Path(result.taxonomy_data.path)
+            else:
+                # Fallback: Look for ASV_tax.gtdb.tsv in results directory
+                job_dir = Path(settings.MEDIA_ROOT) / 'uploads' / str(job.job_id)
+                results_dir = job_dir / 'results'
+                potential_files = [
+                    results_dir / 'dada2' / 'ASV_tax.gtdb.tsv',
+                    results_dir / 'dada2' / 'ASV_tax_species.gtdb.tsv',
+                ]
+                for f in potential_files:
+                    if f.exists():
+                        taxonomy_file = f
+                        break
+            
+            if not taxonomy_file or not taxonomy_file.exists():
+                return Response(
+                    {'error': 'No bacteria data available'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Read and parse the TSV file
+            import pandas as pd
+            df = pd.read_csv(taxonomy_file, sep='\t')
+            
+            # Count unique taxa at genus level
+            bacteria_list = []
+            if 'Genus' in df.columns and 'Phylum' in df.columns and 'Family' in df.columns:
+                # Group by Genus, Family, Phylum and count occurrences
+                genus_counts = df.groupby(['Genus', 'Family', 'Phylum']).size().reset_index(name='total_reads')
+                
+                # Sort by count descending
+                genus_counts = genus_counts.sort_values('total_reads', ascending=False)
+                
+                # Convert to list of dicts
+                for _, row in genus_counts.iterrows():
+                    genus = row['Genus'] if pd.notna(row['Genus']) and row['Genus'] else 'Unknown'
+                    family = row['Family'] if pd.notna(row['Family']) and row['Family'] else 'Unknown'
+                    phylum = row['Phylum'] if pd.notna(row['Phylum']) and row['Phylum'] else 'Unknown'
+                    
+                    bacteria_list.append({
+                        'genus': genus,
+                        'family': family,
+                        'phylum': phylum,
+                        'total_reads': int(row['total_reads'])
+                    })
+            else:
+                return Response(
+                    {'error': 'Taxonomy file does not have expected columns'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response({
+                'bacteria': bacteria_list,
+                'total_count': len(bacteria_list)
+            })
+        except AnalysisResult.DoesNotExist:
+            return Response(
+                {'error': 'No results found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error reading bacteria data: {e}")
+            return Response(
+                {'error': f'Failed to read bacteria data: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

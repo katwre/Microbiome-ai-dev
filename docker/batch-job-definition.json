@@ -1,0 +1,38 @@
+{
+  "jobDefinitionName": "nextflow-ampliseq",
+  "type": "container",
+  "containerProperties": {
+    "image": "<ACCOUNT-ID>.dkr.ecr.us-east-1.amazonaws.com/microbiome-nextflow:latest",
+    "vcpus": 4,
+    "memory": 8192,
+    "jobRoleArn": "arn:aws:iam::<ACCOUNT-ID>:role/BatchJobRole",
+    "executionRoleArn": "arn:aws:iam::<ACCOUNT-ID>:role/ecsTaskExecutionRole",
+    "environment": [
+      {
+        "name": "AWS_DEFAULT_REGION",
+        "value": "us-east-1"
+      },
+      {
+        "name": "NXF_OPTS",
+        "value": "-Xms2G -Xmx6G"
+      }
+    ],
+    "mountPoints": [],
+    "volumes": [],
+    "ulimits": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/aws/batch/nextflow-ampliseq",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "nextflow"
+      }
+    }
+  },
+  "retryStrategy": {
+    "attempts": 1
+  },
+  "timeout": {
+    "attemptDurationSeconds": 7200
+  }
+}

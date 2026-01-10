@@ -1,53 +1,162 @@
-# Welcome to your Lovable project
+# Microbiome Analysis Frontend
 
-## Project info
+React + TypeScript + Vite application for microbiome data analysis.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Quick Start
 
-## How can I edit this code?
+### Prerequisites
+- Node.js 18+ 
+- npm or bun
 
-There are several ways of editing your application.
+### Installation
+```bash
+cd frontend
+npm install
+```
 
-**Use Lovable**
+### Development
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Build for Production
+```bash
+npm run build
+npm run preview  # Preview production build
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🧪 Testing
 
-**Use your preferred IDE**
+### Run Tests
+```bash
+# Run all tests
+npm test
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# Watch mode (recommended during development)
+npm test -- --watch
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Interactive UI
+npm run test:ui
 
-Follow these steps:
+# Coverage report
+npm run test:coverage
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+📖 **See [TESTING.md](./TESTING.md) for comprehensive testing documentation**
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 📁 Project Structure
 
-# Step 3: Install the necessary dependencies.
-npm i
+```
+frontend/
+├── src/
+│   ├── components/      # Reusable UI components (shadcn/ui)
+│   ├── pages/          # Page components (routes)
+│   │   ├── Index.tsx       # Upload form
+│   │   ├── JobStatus.tsx   # Job status & results
+│   │   └── NotFound.tsx    # 404 page
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utilities and configuration
+│   │   ├── api.ts          # API endpoints
+│   │   ├── utils.ts        # UI utilities
+│   │   └── validation.ts   # Form validation
+│   ├── test/           # Test setup and mocks
+│   ├── App.tsx         # Main app component
+│   └── main.tsx        # Entry point
+├── public/             # Static assets
+├── TESTING.md          # Test documentation
+└── package.json        # Dependencies & scripts
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## 🎨 UI Components
+
+Built with [shadcn/ui](https://ui.shadcn.com/) and Tailwind CSS:
+- Modern, accessible components
+- Dark mode support
+- Fully customizable
+- TypeScript support
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create `.env.development` for local development:
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+Create `.env.production` for production:
+```env
+VITE_API_BASE_URL=https://api.yourdomain.com
+```
+
+## 📦 Key Dependencies
+
+### Production
+- **React 18** - UI library
+- **React Router** - Routing
+- **shadcn/ui** - UI components
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icons
+- **Zod** - Schema validation
+
+### Development
+- **Vite** - Build tool
+- **TypeScript** - Type safety
+- **Vitest** - Testing framework
+- **React Testing Library** - Component testing
+- **MSW** - API mocking
+- **ESLint** - Code linting
+
+## 🚢 Deployment
+
+### Docker (Development)
+```bash
+cd ../docker
+docker-compose up -d
+```
+
+### Static Hosting (AWS S3)
+```bash
+npm run build
+aws s3 sync dist/ s3://your-frontend-bucket
+```
+
+See [../DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md) for complete deployment guide.
+
+## 🎯 Features
+
+### ✅ Implemented
+- File upload (FASTQ)
+- Test data option
+- Real-time job status tracking
+- Results visualization
+- Bacteria composition display
+- Download reports
+- Responsive design
+- Dark mode support
+- Error handling
+- Comprehensive test coverage
+
+## 🐛 Troubleshooting
+
+### Port already in use
+```bash
+lsof -ti:5173 | xargs kill -9
+```
+
+### Clear cache
+```bash
+rm -rf node_modules/.vite
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📚 Resources
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
+- [React Documentation](https://react.dev/)
+- [Vite Documentation](https://vitejs.dev/)
+- [shadcn/ui Components](https://ui.shadcn.com/)
+- [Testing Documentation](./TESTING.md)
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
 ## What technologies are used for this project?
