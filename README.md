@@ -10,6 +10,8 @@
   <figcaption align="center"><b>Figure.</b> A preview of the application interface.</figcaption>
 </figure>
 
+------
+
 It's a web-based application that allows users to upload microbiome sequencing data (such as 16S rRNA gene sequencing), perform basic data analysis, and generate visualizations of the microbiome diversity.
 
 Microbiome analysis using 16S rRNA sequencing identifies which bacteria are present in your sample by reading a specific genetic "barcode" that all bacteria have. The sequencing machine reads millions of these DNA barcodes, and specialized software groups them into different bacterial species and measures how abundant each one is. This tells you the diversity of your microbial community - which bacteria are present, how many different types there are, and which ones dominate.
