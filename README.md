@@ -16,6 +16,8 @@ It's a web-based application that allows users to upload microbiome sequencing d
 
 Microbiome analysis using 16S rRNA sequencing identifies which bacteria are present in your sample by reading a specific genetic "barcode" that all bacteria have. The sequencing machine reads millions of these DNA barcodes, and specialized software groups them into different bacterial species and measures how abundant each one is. This tells you the diversity of your microbial community - which bacteria are present, how many different types there are, and which ones dominate.
 
+> This application was developed as part of the [AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp) by [DataTalks.Club](https://datatalks.club/), a free course focused on building AI-powered applications with modern development tools and best practices.
+
 
 ## Tech Stack
 
