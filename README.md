@@ -2,9 +2,13 @@
 
 ![CI Status](https://github.com/katwre/Microbiome-ai-dev/actions/workflows/ci.yml/badge.svg)
 
+
+<figure>
 <p align="center">
-  <img src="./img/poster1.png" alt="Logo" width="500">
+  <img src="./img/MicrobiomeReportBuilderApp.gif" alt="Logo" width="500">
 </p>
+  <figcaption align="center"><b>Figure.</b> A preview of the application interface.</figcaption>
+</figure>
 
 It's a web-based application that allows users to upload microbiome sequencing data (such as 16S rRNA gene sequencing), perform basic data analysis, and generate visualizations of the microbiome diversity.
 
@@ -93,11 +97,6 @@ docker-compose up -d
 ## Documentation
 
 ### Architecture
-
-**Backend** - [Backend Documentation](backend/microbiome-backend/README.md)
-- REST API with Django & Django REST Framework
-- PostgreSQL (production) / SQLite (development)
-- Comprehensive test suite (25 tests)
 
 **Backend** - [Backend Documentation](backend/microbiome-backend/README.md)
 - REST API with Django & Django REST Framework
