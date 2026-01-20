@@ -5,7 +5,7 @@
 
 <figure>
 <p align="center">
-  <img src="./img/MicrobiomeReportBuilderApp.gif" alt="Logo" width="500">
+  <img src="./img/MicrobiomeReportBuilderApp.gif" alt="Logo" width="900">
 </p>
   <figcaption align="center"><b>Figure.</b> A preview of the application interface.</figcaption>
 </figure>
